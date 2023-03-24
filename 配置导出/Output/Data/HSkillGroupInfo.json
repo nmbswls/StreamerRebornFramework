@@ -1,0 +1,196 @@
+{
+  "1": {
+    "ID": 1,
+    "ShowCondition": [],
+    "Priority": 0,
+    "SkillList": [
+      99722,
+      99724,
+      99726,
+      99731
+    ]
+  },
+  "11": {
+    "ID": 11,
+    "ShowCondition": [
+      {
+        "P1": 2,
+        "P2": 1,
+        "P3": 50,
+        "P4": 0
+      },
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 5,
+    "SkillList": [
+      99725
+    ]
+  },
+  "101": {
+    "ID": 101,
+    "ShowCondition": [
+      {
+        "P1": 1,
+        "P2": 1,
+        "P3": 1,
+        "P4": 0
+      },
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 5,
+    "SkillList": [
+      99723
+    ]
+  },
+  "102": {
+    "ID": 102,
+    "ShowCondition": [
+      {
+        "P1": 1,
+        "P2": 4,
+        "P3": 1,
+        "P4": 0
+      },
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 5,
+    "SkillList": [
+      99721
+    ]
+  },
+  "200": {
+    "ID": 200,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99720
+    ]
+  },
+  "201": {
+    "ID": 201,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 1,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99730
+    ]
+  },
+  "202": {
+    "ID": 202,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 2,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99730
+    ]
+  },
+  "203": {
+    "ID": 203,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 3,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99730
+    ]
+  },
+  "204": {
+    "ID": 204,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 4,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99730
+    ]
+  },
+  "205": {
+    "ID": 205,
+    "ShowCondition": [
+      {
+        "P1": 4,
+        "P2": 0,
+        "P3": 5,
+        "P4": 0
+      }
+    ],
+    "Priority": 6,
+    "SkillList": [
+      99730
+    ]
+  },
+  "300": {
+    "ID": 300,
+    "ShowCondition": [
+      {
+        "P1": 5,
+        "P2": 5,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 30,
+    "SkillList": [
+      99799
+    ]
+  },
+  "301": {
+    "ID": 301,
+    "ShowCondition": [
+      {
+        "P1": 5,
+        "P2": 0,
+        "P3": 0,
+        "P4": 0
+      }
+    ],
+    "Priority": 30,
+    "SkillList": [
+      99798
+    ]
+  }
+}

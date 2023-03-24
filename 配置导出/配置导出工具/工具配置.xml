@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ToolConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <WorkspacePath>D:\Misc\UnityProjects\StreamerReborn\配置导出\Excels</WorkspacePath>
+  <OutputPath>D:\Misc\UnityProjects\StreamerReborn\配置导出\Output</OutputPath>
+  <ClassPrefix>ConfigData</ClassPrefix>
+  <ConfigNamespace>My.ConfigData</ConfigNamespace>
+</ToolConfig>

@@ -1,0 +1,17 @@
+ManifestFileVersion: 0
+CRC: 1797817496
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: d5d58e10912d8199ee1a2706c9401675
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 5ad585dd02dfb5016c0dad519eab8f49
+HashAppended: 0
+ClassTypes:
+- Class: 49
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/RuntimeAssets/ConfigData/confit0.txt
+Dependencies: []
