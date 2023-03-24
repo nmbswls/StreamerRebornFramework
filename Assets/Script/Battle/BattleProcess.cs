@@ -35,6 +35,8 @@ namespace StreamerReborn
         {
             return null;
         }
+
+        public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
     }
 }
 

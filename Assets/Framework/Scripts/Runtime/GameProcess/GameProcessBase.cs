@@ -410,7 +410,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// ×ÊÔ´³¡¾°
         /// </summary>
-        public string MainSceneResPath { get; set; }
+        public virtual string MainSceneResPath { get; set; }
 
         /// <summary>
         /// stop Í£Ö¹

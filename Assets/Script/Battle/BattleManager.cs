@@ -10,6 +10,14 @@ namespace StreamerReborn
         private static BattleManager m_instance;
         public static BattleManager Instance { get{ return m_instance; } }
 
+
+        private void Awake()
+        {
+            if(m_instance != null)
+            {
+                m_instance = this;
+            }
+        }
         /// <summary>
         /// ½ö¹©²âÊÔ 
         /// </summary>

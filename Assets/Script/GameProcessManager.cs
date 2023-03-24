@@ -70,13 +70,14 @@ namespace StreamerReborn
                 yield return null;
             }
 
-            //var hudCtrl = UIControllerHud.Create();
-            //while (!hudCtrl.IsLayerInStack())
-            //    yield return 0;
+
+            var hudCtrl = UIControllerBattleHud.Create();
+            while (!hudCtrl.IsLayerInStack())
+                yield return 0;
 
 
             // 加入管理
-            
+
         }
 
         private IEnumerator LoadAfterUI()

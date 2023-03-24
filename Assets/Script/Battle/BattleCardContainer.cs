@@ -13,7 +13,6 @@ namespace StreamerReborn
         [Serializable]
         public class BattleCardContainerSettings
         {
-
             /// <summary>
             /// 弧形排布时 最左最右卡在圆弦上对应角度 angle
             /// </summary>
@@ -87,8 +86,8 @@ namespace StreamerReborn
         /// </summary>
         private void RegisterEvent()
         {
-            BattleManager.Instance.EventOnAddCard += OnAddCard;
-            BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
+            //BattleManager.Instance.EventOnAddCard += OnAddCard;
+            //BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
         }
 
         /// <summary>
@@ -96,8 +95,8 @@ namespace StreamerReborn
         /// </summary>
         private void UnRegisterEvent()
         {
-            BattleManager.Instance.EventOnAddCard -= OnAddCard;
-            BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
+            //BattleManager.Instance.EventOnAddCard -= OnAddCard;
+            //BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
         }
 
         /// <summary>
@@ -135,6 +134,7 @@ namespace StreamerReborn
                 return;
             }
             var card = cardGo.GetComponent<BattleCard>();
+            card.BindFields();
             //card.Init(cardInfo, this);
             HandCards.Add(card);
             
@@ -187,8 +187,6 @@ namespace StreamerReborn
 
 
         #endregion
-
-        
 
 
         public void RecycleCard(GameObject go)

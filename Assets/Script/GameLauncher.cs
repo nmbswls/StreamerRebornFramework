@@ -41,6 +41,8 @@ namespace StreamerReborn
             GameStatic.UIManager.RegisterUIController("Loading", typeof(UIControllerLoading).ToString(), 0);
             GameStatic.UIManager.RegisterUIController("MessageBox", typeof(UIControllerMessageBoxSimple).ToString(), 0);
 
+            GameStatic.UIManager.RegisterUIController("BattleHud", typeof(UIControllerBattleHud).ToString(), 0);
+
             // Æô¶¯½øÃÅui
             var entryUI = GameStatic.UIManager.StartUIController(new UIIntent("EntryStartup")) as UIControllerEntryStartup;
             if (entryUI == null)

@@ -220,6 +220,12 @@ namespace StreamerReborn
         [AutoBind("./CardRoot/ImageContent")]
         public Image ImageContent;
 
+        [AutoBind("./CardRoot/ImageCover")]
+        public Image ImageCover;
+
+        [AutoBind("./CardRoot/ImageBG")]
+        public Image ImageBG;
+
         [AutoBind("./")]
         public Animator m_animator;
 

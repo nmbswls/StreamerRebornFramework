@@ -348,7 +348,9 @@ namespace My.Framework.Runtime.Scene
 
                 // 资源加载完成,自动push，unityscenelayer，不会有不在栈中的情况
                 PushLayer(layer);
-                
+                //默认把最新加载的场景作为current scene，如果想换可以在updateview里active
+                if (UnityEngine.SceneManagement.SceneManager.GetActiveScene() != layer.Scene)
+                    UnityEngine.SceneManagement.SceneManager.SetActiveScene(layer.Scene);
                 onComplete(layer);
             });
             m_corutineHelper.StartCoroutine(iter);
