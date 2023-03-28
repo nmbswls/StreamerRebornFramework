@@ -77,20 +77,7 @@ namespace My.Framework.Runtime.Scene
             LayerPrefabRoot = go;
         }
 
-        /// <summary>
-        /// 比较函数
-        /// </summary>
-        /// <param name="compareLayer"></param>
-        /// <returns></returns>
-        public int ComparePriority(SceneLayerBase compareLayer)
-        {
-            //相异时，在顶部返回false，否则返回true
-            if (IsStayOnTop ^ compareLayer.IsStayOnTop)
-                return IsStayOnTop ? 1 : -1;
-
-            // 优先度越小的layer越小
-            return Priority.CompareTo(compareLayer.Priority);
-        }
+        
 
         /// <summary>
         /// 初始化
@@ -149,8 +136,48 @@ namespace My.Framework.Runtime.Scene
             WaitForFree     // 等待释放
         }
 
+
+        #region 显示优先级
+
         public bool IsStayOnTop;
         public int Priority;
+
+        /// <summary>
+        /// 设置层的优先度，值越大，越上层
+        /// </summary>
+        /// <returns></returns>
+        public void SetLayerPriority(int priority)
+        {
+            Priority = priority;
+        }
+
+        /// <summary>
+        /// 获取层的优先度，值越大，越上层
+        /// </summary>
+        /// <returns></returns>
+        public int GetLayerPriority()
+        {
+            return Priority;
+        }
+
+        /// <summary>
+        /// 比较函数
+        /// </summary>
+        /// <param name="compareLayer"></param>
+        /// <returns></returns>
+        public int ComparePriority(SceneLayerBase compareLayer)
+        {
+            //相异时，在顶部返回false，否则返回true
+            if (IsStayOnTop ^ compareLayer.IsStayOnTop)
+                return IsStayOnTop ? 1 : -1;
+
+            // 优先度越小的layer越小
+            return Priority.CompareTo(compareLayer.Priority);
+        }
+
+
+        #endregion
+
 
         /// <summary>
         /// 获取当前层的camera

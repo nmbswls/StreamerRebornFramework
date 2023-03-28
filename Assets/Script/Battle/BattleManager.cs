@@ -13,7 +13,7 @@ namespace StreamerReborn
 
         private void Awake()
         {
-            if(m_instance != null)
+            if(m_instance == null)
             {
                 m_instance = this;
             }
@@ -21,7 +21,7 @@ namespace StreamerReborn
         /// <summary>
         /// ½ö¹©²âÊÔ 
         /// </summary>
-        public void Start()
+        public void BattleStart()
         {
             {
                 var info = new CardInstanceInfo();

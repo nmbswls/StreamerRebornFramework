@@ -1,8 +1,10 @@
 using My.Framework.Runtime.Prefab;
 using My.Framework.Runtime.UI;
+using My.Framework.Runtime.UIExtention;
 using StreamerReborn.Config;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,6 +18,18 @@ namespace StreamerReborn
         protected BattleCardContainer m_container;
 
         public CardInstanceInfo InstanceInfo;
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="instanceInfo"></param>
+        /// <param name="owner"></param>
+        public void Init(CardInstanceInfo instanceInfo, BattleCardContainer owner)
+        {
+            this.InstanceInfo = instanceInfo;
+            this.m_container = owner;
+        }
+
 
         /// <summary>
         /// 对外 类型
@@ -85,6 +99,11 @@ namespace StreamerReborn
 
 
             CardRoot.anchoredPosition = m_shakingVector;
+
+            if(Input.GetKeyDown(KeyCode.S))
+            {
+                wholeDissolveController.StartDissolve();
+            }
         }
 
 
@@ -132,7 +151,7 @@ namespace StreamerReborn
         /// </summary>
         public void Disappaer()
         {
-            m_animator.SetTrigger("Disappear");
+            //m_animator.SetTrigger("Disappear");
             m_state = EnumState.Destroying;
             CardClickArea.blocksRaycasts = false;
         }
@@ -143,6 +162,8 @@ namespace StreamerReborn
         public void Recycle()
         {
             m_container.RecycleCard(gameObject);
+
+            wholeDissolveController.DissolveEnd();
         }
 
         
@@ -226,8 +247,11 @@ namespace StreamerReborn
         [AutoBind("./CardRoot/ImageBG")]
         public Image ImageBG;
 
-        [AutoBind("./")]
-        public Animator m_animator;
+        //[AutoBind("./")]
+        //public Animator m_animator;
+
+        [AutoBind("./CardRoot")]
+        public WholeDissolveController wholeDissolveController;
 
         #endregion
     }

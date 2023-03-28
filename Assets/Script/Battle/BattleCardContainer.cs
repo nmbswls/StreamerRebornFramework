@@ -24,18 +24,18 @@ namespace StreamerReborn
             /// <summary>
             /// 默认间隔
             /// </summary>
-            public float DefaultInterval = 0.1f;
+            public float DefaultInterval = 0.2f;
 
             public float DefaultIntervalDis = 220f;
         }
 
         enum EnumHandCardsLayoutMode
         {
-            Line,
             Arcc,
+            Line,
         }
 
-        private EnumHandCardsLayoutMode HandCardsLayoutMode = EnumHandCardsLayoutMode.Line; // 排列模式 0 弧形 1 水平
+        private EnumHandCardsLayoutMode HandCardsLayoutMode = EnumHandCardsLayoutMode.Arcc; // 排列模式 0 弧形 1 水平
 
         private GameObject m_cardPrefab;
 
@@ -61,8 +61,6 @@ namespace StreamerReborn
 
         #endregion
 
-
-
         /// <summary>
         /// 完成绑定回调
         /// </summary>
@@ -77,6 +75,7 @@ namespace StreamerReborn
                 m_arcRadius = m_width * 0.5f / Mathf.Sin(Settings.LayoutDegree * 0.5f * Mathf.Deg2Rad);
             }
 
+            m_cardPrefab = GameStatic.ResourceManager.LoadAssetSync<GameObject>("Assets/RuntimeAssets/UI/UIPrefab/Battle/BattleCard.prefab");
             RegisterEvent();
         }
 
@@ -86,8 +85,8 @@ namespace StreamerReborn
         /// </summary>
         private void RegisterEvent()
         {
-            //BattleManager.Instance.EventOnAddCard += OnAddCard;
-            //BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
+            BattleManager.Instance.EventOnAddCard += OnAddCard;
+            BattleManager.Instance.EventOnRemoveCard += OnRemoveHandCard;
         }
 
         /// <summary>
@@ -95,8 +94,8 @@ namespace StreamerReborn
         /// </summary>
         private void UnRegisterEvent()
         {
-            //BattleManager.Instance.EventOnAddCard -= OnAddCard;
-            //BattleManager.Instance.EventOnAddCard += OnRemoveHandCard;
+            BattleManager.Instance.EventOnAddCard -= OnAddCard;
+            BattleManager.Instance.EventOnRemoveCard -= OnRemoveHandCard;
         }
 
         /// <summary>
@@ -106,6 +105,14 @@ namespace StreamerReborn
         public override void Tick(float dTime)
         {
             TickHands(dTime);
+
+            if(Input.GetKeyDown(KeyCode.A))
+            {
+                var info = new CardInstanceInfo();
+                info.InstanceId = 1;
+                info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(104);
+                OnAddCard(info);
+            }
         }
 
         /// <summary>
@@ -134,8 +141,8 @@ namespace StreamerReborn
                 return;
             }
             var card = cardGo.GetComponent<BattleCard>();
+            card.Init(instanceInfo, this);
             card.BindFields();
-            //card.Init(cardInfo, this);
             HandCards.Add(card);
             
             // 类型1 从左侧进牌
@@ -152,7 +159,6 @@ namespace StreamerReborn
             // 整理手牌 类型1在左 类型2 在右
             ReArrangeHandCards();
 
-            
 
             // 调整位置
             AdjustHandCards();
@@ -209,9 +215,9 @@ namespace StreamerReborn
         {
             // 计算当前手牌数量下的排布情况
             float interval = Settings.DefaultInterval;
-            if (HandCards.Count >= 10)
+            if (HandCards.Count > 5)
             {
-                interval = 1 / HandCards.Count;
+                interval = 1.0f / HandCards.Count;
             }
 
             // 起始位置
@@ -274,13 +280,19 @@ namespace StreamerReborn
                 // 检查
                 if (HandCardsLayoutMode == EnumHandCardsLayoutMode.Arcc)
                 {
-                    
-                    card.NowPositionInHand += Mathf.Sign(card.TargetPositionInHand - card.NowPositionInHand) * dTime * 1;
+                    if(Mathf.Abs(card.TargetPositionInHand - card.NowPositionInHand) <= dTime * 1f)
+                    {
+                        card.NowPositionInHand = card.TargetPositionInHand;
+                    }
+                    else
+                    {
+                        card.NowPositionInHand += Mathf.Sign(card.TargetPositionInHand - card.NowPositionInHand) * dTime * 1f;
+                    }
                     if (card.NowPositionInHand < 0) card.NowPositionInHand = 0;
                     if(card.NowPositionInHand > 1) card.NowPositionInHand = 1;
                     float degree = (Settings.LayoutDegree) * card.NowPositionInHand - Settings.LayoutDegree * 0.5f;
                     Vector2 pos = LocalPositionGetByDrgreeInHand(card.NowPositionInHand);
-
+                    card.Root.anchoredPosition = pos;
                     card.Root.localEulerAngles = new Vector3(0, 0, -degree);
                 }
                 else
@@ -400,8 +412,6 @@ namespace StreamerReborn
         /// 手牌组
         /// </summary>
         public List<BattleCard> HandCards = new List<BattleCard>();
-
-
 
         #region 缓存
 

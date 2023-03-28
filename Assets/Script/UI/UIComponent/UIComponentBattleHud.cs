@@ -35,6 +35,12 @@ namespace StreamerReborn
                 m_cardContainer.Clear();
         }
 
+        public override void Tick(float dt)
+        {
+            base.Tick(dt);
+            m_cardContainer?.Tick(dt);
+        }
+
         #region ÊÂ¼þ
 
         /// <summary>

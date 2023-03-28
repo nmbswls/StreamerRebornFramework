@@ -117,7 +117,9 @@ namespace StreamerReborn
             bool? ret = null;
 
             yield return ProcessManager.EnterBattleCoroutine(
-                () => {  }
+                () => {
+                    BattleManager.Instance.BattleStart();
+                }
             );
         }
 

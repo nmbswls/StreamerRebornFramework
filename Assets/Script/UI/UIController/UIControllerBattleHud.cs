@@ -32,6 +32,9 @@ namespace StreamerReborn
             m_compHud = m_uiCompArray[0] as UIComponentBattleHud;
         }
 
+
+        
+
         protected override void OnTick(float dt)
         {
             m_compHud?.Tick(dt);

@@ -62,31 +62,34 @@ namespace My.Framework.Runtime.Scene
         private bool CreateSceneRoot()
         {
             Debug.Log("SceneManager.CreateSceneRoot start");
-
-            m_sceneRootGo = new GameObject("SceneRoot");
-            m_sceneRootGo.transform.localPosition = Vector3.zero;
-            m_sceneRootGo.transform.localRotation = Quaternion.identity;
-            m_sceneRootGo.transform.localScale = Vector3.one;
-
+            var sceneRootPrefab = Resources.Load<GameObject>("SceneRoot");
+            m_sceneRootGo = GameObject.Instantiate(sceneRootPrefab);
+            if (m_sceneRootGo == null)
             {
-                GameObject goUISceneRoot = new GameObject("UISceneRoot");
-                goUISceneRoot.transform.SetParent(m_sceneRootGo.transform);
+                m_sceneRootGo = new GameObject("SceneRoot");
+                m_sceneRootGo.transform.localPosition = Vector3.zero;
+                m_sceneRootGo.transform.localRotation = Quaternion.identity;
+                m_sceneRootGo.transform.localScale = Vector3.one;
 
-                GameObject go3DSceneRoot = new GameObject("3DSceneRoot");
-                go3DSceneRoot.transform.SetParent(m_sceneRootGo.transform);
+                {
+                    GameObject goUISceneRoot = new GameObject("UISceneRoot");
+                    goUISceneRoot.transform.SetParent(m_sceneRootGo.transform);
 
-                GameObject goUnusedLayerRoot = new GameObject("UnusedLayerRoot");
-                goUnusedLayerRoot.transform.SetParent(m_sceneRootGo.transform);
+                    GameObject go3DSceneRoot = new GameObject("3DSceneRoot");
+                    go3DSceneRoot.transform.SetParent(m_sceneRootGo.transform);
 
-                GameObject goLoadingLayerRoot = new GameObject("LoadingLayerRoot");
-                goLoadingLayerRoot.transform.SetParent(m_sceneRootGo.transform);
+                    GameObject goUnusedLayerRoot = new GameObject("UnusedLayerRoot");
+                    goUnusedLayerRoot.transform.SetParent(m_sceneRootGo.transform);
 
-                GameObject goEventSystem = new GameObject("EventSystem");
-                goEventSystem.AddComponent<EventSystem>();
-                goEventSystem.AddComponent<StandaloneInputModule>();
-                goUISceneRoot.transform.SetParent(m_sceneRootGo.transform);
+                    GameObject goLoadingLayerRoot = new GameObject("LoadingLayerRoot");
+                    goLoadingLayerRoot.transform.SetParent(m_sceneRootGo.transform);
+
+                    GameObject goEventSystem = new GameObject("EventSystem");
+                    goEventSystem.AddComponent<EventSystem>();
+                    goEventSystem.AddComponent<StandaloneInputModule>();
+                    goUISceneRoot.transform.SetParent(m_sceneRootGo.transform);
+                }
             }
-
 
             // 缓存各个有用的节点
             m_3DSceneRootGo = m_sceneRootGo.transform.Find("3DSceneRoot").gameObject;
@@ -94,7 +97,7 @@ namespace My.Framework.Runtime.Scene
             m_loadingLayerRootGo = m_sceneRootGo.transform.Find("LoadingLayerRoot").gameObject;
             m_uiSceneRootGo = m_sceneRootGo.transform.Find("UISceneRoot").gameObject;
 
-            //m_defaultUiCamera = GameObject.Find("UICamera").GetComponent<Camera>();
+            m_uiCameraTemplate = m_sceneRootGo.transform.Find("UICameraTemplate").gameObject;
 
             return true;
         }
@@ -137,7 +140,16 @@ namespace My.Framework.Runtime.Scene
 
         private GameObject CreateDefaultCamera()
         {
-            GameObject cameraGo = new GameObject();
+            GameObject cameraGo;
+            if (m_uiCameraTemplate != null)
+            {
+                cameraGo = GameObject.Instantiate<GameObject>(m_uiCameraTemplate);
+                cameraGo.SetActive(true);
+                cameraGo.name = "UICamera";
+                return cameraGo;
+            }
+
+            cameraGo = new GameObject();
             cameraGo.name = "UICamera";
             var camera = cameraGo.AddComponent<Camera>();
             camera.clearFlags = CameraClearFlags.Depth;
@@ -145,6 +157,7 @@ namespace My.Framework.Runtime.Scene
             camera.orthographic = true;
             camera.orthographicSize = 5.4f;
             camera.depth = 50;
+
             return cameraGo;
         }
 
@@ -707,7 +720,27 @@ namespace My.Framework.Runtime.Scene
         /// <param name="layerStack"></param>
         private void SortLayerStack(List<SceneLayerBase> layerStack)
         {
-            layerStack.Sort((layerA, layerB) => layerA.ComparePriority(layerB));
+            // 稳定的插入排序
+            int i, j;
+            // 当前排序元素的临时存储
+            SceneLayerBase target;
+            for (i = 1; i < layerStack.Count; i++)
+            {
+                j = i;
+
+                // 获取当前排序的元素
+                target = layerStack[i];
+
+                // 如果当前的第j个元素和第j-1个元素满足下面的比较标准，那么需要交换这两个元素的位置
+                // 将第j个元素插入到 前面的 已经排好序的元素 中一个合适的位置，使得插入后的元素序列仍然保持有序
+                while (j > 0 && target.ComparePriority(layerStack[j - 1]) < 0)
+                {
+                    layerStack[j] = layerStack[j - 1];
+                    j--;
+                }
+
+                layerStack[j] = target;
+            }
         }
 
         /// <summary>
@@ -749,6 +782,8 @@ namespace My.Framework.Runtime.Scene
         private GameObject m_3DSceneRootGo;
         private GameObject m_uiSceneRootGo;
 
+        private GameObject m_uiCameraTemplate;
+
         #endregion
 
         /// <summary>
@@ -786,5 +821,10 @@ namespace My.Framework.Runtime.Scene
         /// 额外生成的camera
         /// </summary>
         private List<Camera> m_extraCameraList = new List<Camera>();
+
+        /// <summary>
+        /// sceneroot 资源路径 如无则从头创建
+        /// </summary>
+        private static string m_sceneRootAssetPath = "SceneRoot";
     }
 }

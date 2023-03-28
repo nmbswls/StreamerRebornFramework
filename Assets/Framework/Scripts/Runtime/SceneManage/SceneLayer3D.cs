@@ -38,7 +38,7 @@ namespace My.Framework.Runtime.Scene
                 return m_layerCamera;
             }
         }
-        private Camera m_layerCamera;
+        protected Camera m_layerCamera;
     }
 }
 

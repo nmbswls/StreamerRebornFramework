@@ -60,7 +60,7 @@ namespace StreamerReborn
             m_processList.Add(battleProcess);
             bool isFinish = false;
             battleProcess.TryLoadBattleScene(() => {
-                Debug.LogError("TryLoadBattleScene Finish");
+                Debug.Log("TryLoadBattleScene Finish");
                 isFinish = true;
             });
 
@@ -69,7 +69,7 @@ namespace StreamerReborn
             {
                 yield return null;
             }
-
+            yield return null;
 
             var hudCtrl = UIControllerBattleHud.Create();
             while (!hudCtrl.IsLayerInStack())

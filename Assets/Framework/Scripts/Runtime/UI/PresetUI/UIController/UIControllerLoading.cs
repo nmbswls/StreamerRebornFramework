@@ -144,6 +144,12 @@ namespace My.Framework.Runtime.UI
             Stop();
         }
 
+        protected override void InitLayerStateOnLoadAllResCompleted()
+        {
+            base.InitLayerStateOnLoadAllResCompleted();
+            MainLayer.Priority = 200;
+        }
+
         /// <summary>
         /// 最小加载时间
         /// </summary>

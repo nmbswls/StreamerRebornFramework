@@ -25,6 +25,7 @@ namespace StreamerReborn
         protected override void Initialize(GameProcessLoadPipeLineCtxBase pipeCtx)
         {
             base.Initialize(pipeCtx);
+
         }
 
         /// <summary>
@@ -35,6 +36,8 @@ namespace StreamerReborn
         {
             return null;
         }
+
+        
 
         public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
     }
