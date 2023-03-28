@@ -80,18 +80,22 @@ namespace StreamerReborn
         {
             switch(m_state)
             {
-                case EnumState.Normal:
+                case EnumPositionState.InHand:
                     {
 
                     }
                     break;
-                case EnumState.Destroying:
+                case EnumPositionState.Backing:
                     {
-                        m_timer += dTime;
-                        if(m_timer > 0.5f)
+                        Root.localEulerAngles = m_container.LocalEularGetByPositionInHand(TargetPositionInHand);
+
+                        Vector2 targetPos = m_container.LocalPositionGetByDrgreeInHand(TargetPositionInHand);
+                        Root.anchoredPosition = Vector2.Lerp(Root.anchoredPosition, targetPos, 0.05f);
+                        if(Mathf.Abs((targetPos - Root.anchoredPosition).magnitude) < 1e-2)
                         {
-                            m_timer = 0;
-                            Recycle();
+                            Root.anchoredPosition = targetPos;
+                            NowPositionInHand = TargetPositionInHand;
+                            m_state = EnumPositionState.InHand;
                         }
                     }
                     break;
@@ -132,6 +136,19 @@ namespace StreamerReborn
         #region 位置相关
 
         /// <summary>
+        /// 在手牌外初始化
+        /// </summary>
+        /// <param name="positionWorld"></param>
+        public void InitFromOutside(Vector3 positionWorld)
+        {
+            m_state = EnumPositionState.Backing;
+
+            Root.position = positionWorld;
+            Root.localPosition = new Vector3(Root.localPosition.x, Root.localPosition.y, 0);
+        }
+
+
+        /// <summary>
         /// 在手牌中的位置
         /// 根据container的排列方式不同，代表不同含义
         /// </summary>
@@ -152,7 +169,7 @@ namespace StreamerReborn
         public void Disappaer()
         {
             //m_animator.SetTrigger("Disappear");
-            m_state = EnumState.Destroying;
+            //m_state = EnumPositionState.Destroying;
             CardClickArea.blocksRaycasts = false;
         }
 
@@ -190,17 +207,19 @@ namespace StreamerReborn
 
         #region 切换状态
 
-        enum EnumState
+        public enum EnumPositionState
         {
-            Normal,
-            Destroying,
-            BackingFromOut,
+            InHand,
+            Poping, // 正在高亮
+            InPreview,
+            Backing,
         }
 
+        public EnumPositionState PositionState { get { return m_state; } }
         /// <summary>
-        /// 状态
+        /// 位置状态
         /// </summary>
-        private EnumState m_state = EnumState.Normal;
+        private EnumPositionState m_state = EnumPositionState.InHand;
 
         
 

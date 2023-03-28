@@ -68,7 +68,7 @@ namespace StreamerReborn
         {
             base.OnBindFiledsCompleted();
 
-            m_width = Root.rect.width;
+            m_width = NormalRoot.rect.width;
 
             if(HandCardsLayoutMode == EnumHandCardsLayoutMode.Arcc)
             {
@@ -135,26 +135,18 @@ namespace StreamerReborn
         public void OnAddCard(CardInstanceInfo instanceInfo)
         {
             //GameStatic.ResourceManager.LoadAssetSync<Ga>
-            GameObject cardGo = GameObject.Instantiate(m_cardPrefab, NormalRoot);
+            GameObject cardGo = GameObject.Instantiate(m_cardPrefab, Root);
             if (cardGo == null)
             {
                 return;
             }
             var card = cardGo.GetComponent<BattleCard>();
+            card.name = card.name.Replace("(Clone)","");
             card.Init(instanceInfo, this);
             card.BindFields();
             HandCards.Add(card);
-            
-            // 类型1 从左侧进牌
-            if(card.GetCardType() == 1)
-            {
-                card.NowPositionInHand = 0;
-            }
-            // 类型2 从右侧进牌
-            else
-            {
-                card.NowPositionInHand = 1;
-            }
+
+
 
             // 整理手牌 类型1在左 类型2 在右
             ReArrangeHandCards();
@@ -162,6 +154,19 @@ namespace StreamerReborn
 
             // 调整位置
             AdjustHandCards();
+
+
+            // 类型1 从左侧进牌
+            if (card.GetCardType() == 1)
+            {
+                card.InitFromOutside(BornPosLeft.position);
+
+            }
+            // 类型2 从右侧进牌
+            else
+            {
+                card.InitFromOutside(BornPosRight.position);
+            }
         }
 
 
@@ -245,11 +250,11 @@ namespace StreamerReborn
                 var card = HandCards[i];
                 if(card.IsHightLight)
                 {
-                    card.transform.parent = HightLightRoot;
+                    card.transform.SetParent(HightLightRoot);
                 }
                 else
                 {
-                    card.transform.parent = NormalRoot;
+                    card.transform.SetParent(NormalRoot);
                 }
                 card.transform.SetSiblingIndex(i);
             }
@@ -276,18 +281,24 @@ namespace StreamerReborn
                     card.PosDirty = false;
                     continue;
                 }
+                if (card.PositionState != BattleCard.EnumPositionState.InHand)
+                {
+                    continue;
+                }
 
                 // 检查
                 if (HandCardsLayoutMode == EnumHandCardsLayoutMode.Arcc)
                 {
-                    if(Mathf.Abs(card.TargetPositionInHand - card.NowPositionInHand) <= dTime * 1f)
-                    {
-                        card.NowPositionInHand = card.TargetPositionInHand;
-                    }
-                    else
-                    {
-                        card.NowPositionInHand += Mathf.Sign(card.TargetPositionInHand - card.NowPositionInHand) * dTime * 1f;
-                    }
+                    card.NowPositionInHand = Mathf.Lerp(card.NowPositionInHand , card.TargetPositionInHand, 0.05f);
+
+                    //if(Mathf.Abs(card.TargetPositionInHand - card.NowPositionInHand) <= dTime * 1f)
+                    //{
+                    //    card.NowPositionInHand = card.TargetPositionInHand;
+                    //}
+                    //else
+                    //{
+                    //    card.NowPositionInHand += Mathf.Sign(card.TargetPositionInHand - card.NowPositionInHand) * dTime * 1f;
+                    //}
                     if (card.NowPositionInHand < 0) card.NowPositionInHand = 0;
                     if(card.NowPositionInHand > 1) card.NowPositionInHand = 1;
                     float degree = (Settings.LayoutDegree) * card.NowPositionInHand - Settings.LayoutDegree * 0.5f;
@@ -340,12 +351,25 @@ namespace StreamerReborn
 
         #region 内部工具
 
+
+        /// <summary>
+        /// 通过手牌中的角度计算卡牌角度
+        /// </summary>
+        /// <param name="position">0-1之间的归一化位置</param>
+        /// <returns></returns>
+        public Vector3 LocalEularGetByPositionInHand(float position)
+        {
+            float degree = (Settings.LayoutDegree) * position - Settings.LayoutDegree * 0.5f;
+
+            return new Vector3(0,0,-degree);
+        }
+
         /// <summary>
         /// 通过手牌中的角度计算卡牌所处位置 
         /// </summary>
         /// <param name="position">0-1之间的归一化位置</param>
         /// <returns></returns>
-        protected Vector2 LocalPositionGetByDrgreeInHand(float position)
+        public Vector2 LocalPositionGetByDrgreeInHand(float position)
         {
             float degree = (Settings.LayoutDegree) * position - Settings.LayoutDegree * 0.5f;
 
@@ -370,9 +394,9 @@ namespace StreamerReborn
             {
                 foreach(var obj in m_cacheRaycastList)
                 {
-                    if(obj.gameObject.name == "Card")
+                    if(obj.gameObject.name == "CardRoot")
                     {
-                        return obj.gameObject.GetComponent<BattleCard>();
+                        return obj.gameObject.GetComponentInParent<BattleCard>();
                     }
                 }
             }
@@ -435,6 +459,15 @@ namespace StreamerReborn
 
         [AutoBind("./Pool")]
         public RectTransform Pool;
+
+        [AutoBind("./UseCardPreview")]
+        public RectTransform UseCardPreviewRoot;
+
+        [AutoBind("./BornPosLeft")]
+        public RectTransform BornPosLeft;
+
+        [AutoBind("./BornPosRight")]
+        public RectTransform BornPosRight;
 
         #endregion
     }
