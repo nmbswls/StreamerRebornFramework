@@ -8,15 +8,14 @@ using UnityEngine;
 [CustomEditor(typeof(WholeDissolveController))]
 public class WholeDissolveControllerEditor : Editor
 {
-	float _range;
-	float _width;
+	float _location;
 	Vector2 _scale;
 
 
 	protected void OnEnable()
 	{
 		var tempTarget = target as WholeDissolveController;
-		_range = tempTarget.Range;
+		_location = tempTarget.DissolveProgress;
 	}
 
 	public override void OnInspectorGUI()
@@ -26,9 +25,9 @@ public class WholeDissolveControllerEditor : Editor
 		var tempTarget = target as WholeDissolveController;
 
 		GUILayout.Label("ÏûÈÚ·¶Î§");
-		_range = EditorGUILayout.Slider(_range, 0, 1);
+		_location = EditorGUILayout.Slider(_location, 0, 1);
 
-		tempTarget.Range = _range;
+		tempTarget.DissolveProgress = _location;
 	}
 }
 

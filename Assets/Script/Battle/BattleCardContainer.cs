@@ -5,6 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using static StreamerReborn.BattleCard;
 
 namespace StreamerReborn
 {
@@ -24,7 +26,7 @@ namespace StreamerReborn
             /// <summary>
             /// 默认间隔
             /// </summary>
-            public float DefaultInterval = 0.2f;
+            public float DefaultInterval = 0.16f;
 
             public float DefaultIntervalDis = 220f;
         }
@@ -77,6 +79,36 @@ namespace StreamerReborn
 
             m_cardPrefab = GameStatic.ResourceManager.LoadAssetSync<GameObject>("Assets/RuntimeAssets/UI/UIPrefab/Battle/BattleCard.prefab");
             RegisterEvent();
+
+
+            BtnPreviewConfirm.onClick.AddListener(delegate() { 
+            
+            
+            });
+
+            BtnPreviewCancel.onClick.AddListener(delegate () {
+
+                if(PreviewCards.Count == 0)
+                {
+                    return;
+                }
+
+                for(int i= PreviewCards.Count - 1;i>=0;i--)
+                {
+                    var card = PreviewCards[i];
+                    card.MakeStateTransition(EnumPositionState.InHand);
+
+                    HandCards.Remove(card);
+                    PreviewCards.Remove(card);
+
+                    HandCards.Add(card);
+                    card.Root.SetParent(NormalRoot, true);
+
+                    AdjustHandCards();
+                }
+                
+
+            });
         }
 
 
@@ -106,6 +138,9 @@ namespace StreamerReborn
         {
             TickHands(dTime);
 
+            TickPreview(dTime);
+
+            
             if(Input.GetKeyDown(KeyCode.A))
             {
                 var info = new CardInstanceInfo();
@@ -124,6 +159,35 @@ namespace StreamerReborn
             card.PosDirty = true;
             card.TargetPositionInHand = 1;
         }
+
+        /// <summary>
+        /// 是否选择目标
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPreviewChooseTarget()
+        {
+            return false;
+        }
+
+        #region 移动卡片
+
+        /// <summary>
+        /// 将卡片移到preview区
+        /// </summary>
+        /// <param name="card"></param>
+        public void MoveCard2Preview(BattleCard card)
+        {
+            HandCards.Remove(card); 
+            PreviewCards.Remove(card);
+
+            PreviewCards.Add(card);
+            card.Root.SetParent(UseCardPreviewRoot, true);
+        }
+
+        #endregion
+
+
+
 
         #region 显示通知事件
 
@@ -146,27 +210,25 @@ namespace StreamerReborn
             card.BindFields();
             HandCards.Add(card);
 
-
-
-            // 整理手牌 类型1在左 类型2 在右
-            ReArrangeHandCards();
-
-
-            // 调整位置
-            AdjustHandCards();
-
-
             // 类型1 从左侧进牌
             if (card.GetCardType() == 1)
             {
-                card.InitFromOutside(BornPosLeft.position);
-
+                card.Root.position = BornPosLeft.position;
             }
             // 类型2 从右侧进牌
             else
             {
-                card.InitFromOutside(BornPosRight.position);
+                card.Root.position = BornPosRight.position;
             }
+            card.PositionState = EnumPositionState.CardDeck;
+
+            card.MakeStateTransition(EnumPositionState.InHand);
+
+            // 整理手牌 类型1在左 类型2 在右
+            ReArrangeHandCards();
+
+            // 调整位置
+            AdjustHandCards();
         }
 
 
@@ -191,8 +253,6 @@ namespace StreamerReborn
                 return;
             }
             HandCards[indexInHand].Disappaer();
-            // 是否队列化？
-            HandCards.RemoveAt(indexInHand);
             AdjustHandCards();
         }
 
@@ -220,7 +280,7 @@ namespace StreamerReborn
         {
             // 计算当前手牌数量下的排布情况
             float interval = Settings.DefaultInterval;
-            if (HandCards.Count > 5)
+            if (HandCards.Count > 6)
             {
                 interval = 1.0f / HandCards.Count;
             }
@@ -260,8 +320,6 @@ namespace StreamerReborn
             }
         }
 
-        
-
         #region 内部方法
 
         /// <summary>
@@ -274,49 +332,36 @@ namespace StreamerReborn
             {
                 var card = HandCards[i];
                 card.Tick(dTime);
-
-                // 位置无变化的不做处理
-                if (!card.PosDirty || Mathf.Abs(card.TargetPositionInHand - card.NowPositionInHand) <= 1e-6)
-                {
-                    card.PosDirty = false;
-                    continue;
-                }
-                if (card.PositionState != BattleCard.EnumPositionState.InHand)
-                {
-                    continue;
-                }
-
-                // 检查
-                if (HandCardsLayoutMode == EnumHandCardsLayoutMode.Arcc)
-                {
-                    card.NowPositionInHand = Mathf.Lerp(card.NowPositionInHand , card.TargetPositionInHand, 0.05f);
-
-                    //if(Mathf.Abs(card.TargetPositionInHand - card.NowPositionInHand) <= dTime * 1f)
-                    //{
-                    //    card.NowPositionInHand = card.TargetPositionInHand;
-                    //}
-                    //else
-                    //{
-                    //    card.NowPositionInHand += Mathf.Sign(card.TargetPositionInHand - card.NowPositionInHand) * dTime * 1f;
-                    //}
-                    if (card.NowPositionInHand < 0) card.NowPositionInHand = 0;
-                    if(card.NowPositionInHand > 1) card.NowPositionInHand = 1;
-                    float degree = (Settings.LayoutDegree) * card.NowPositionInHand - Settings.LayoutDegree * 0.5f;
-                    Vector2 pos = LocalPositionGetByDrgreeInHand(card.NowPositionInHand);
-                    card.Root.anchoredPosition = pos;
-                    card.Root.localEulerAngles = new Vector3(0, 0, -degree);
-                }
-                else
-                {
-                    
-                }
             }
 
             CheckHandCardHighlight();
         }
 
+        /// <summary>
+        /// tick预览区
+        /// </summary>
+        /// <param name="dTime"></param>
+        protected void TickPreview(float dTime)
+        {
+            for (int i = 0; i < PreviewCards.Count; i++)
+            {
+                var card = PreviewCards[i];
+                card.Tick(dTime);
+            }
 
-        
+            // 更新
+            if (PreviewCards.Count > 0)
+            {
+                BtnPreviewCancel.gameObject.SetActive(true);
+                BtnPreviewConfirm.gameObject.SetActive(true);
+            }
+            else
+            {
+                BtnPreviewCancel.gameObject.SetActive(false);
+                BtnPreviewConfirm.gameObject.SetActive(false);
+            }
+        }
+
         /// <summary>
         /// 检查高光
         /// </summary>
@@ -325,7 +370,9 @@ namespace StreamerReborn
             bool allHandReach = true;
             for (int i = 0; i < HandCards.Count; i++)
             {
-                if(HandCards[i].PosDirty)
+                // 只有当手牌稳定时才可以
+                var diff = HandCards[i].TargetPositionInHand - HandCards[i].NowPositionInHand;
+                if (Mathf.Abs(diff) > 1e-2)
                 {
                     allHandReach = false;
                 }
@@ -433,6 +480,11 @@ namespace StreamerReborn
         #endregion
 
         /// <summary>
+        /// 预览中卡组
+        /// </summary>
+        public List<BattleCard> PreviewCards = new List<BattleCard>();
+
+        /// <summary>
         /// 手牌组
         /// </summary>
         public List<BattleCard> HandCards = new List<BattleCard>();
@@ -460,8 +512,14 @@ namespace StreamerReborn
         [AutoBind("./Pool")]
         public RectTransform Pool;
 
-        [AutoBind("./UseCardPreview")]
+        [AutoBind("./UseCardPreview/Holder")]
         public RectTransform UseCardPreviewRoot;
+
+        [AutoBind("./UseCardPreview/BtnPreviewCancel")]
+        public Button BtnPreviewCancel;
+
+        [AutoBind("./UseCardPreview/BtnPreviewConfirm")]
+        public Button BtnPreviewConfirm;
 
         [AutoBind("./BornPosLeft")]
         public RectTransform BornPosLeft;

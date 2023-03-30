@@ -16,6 +16,8 @@ namespace StreamerReborn
 
 
             m_cardContainer.BindFields();
+
+            m_arrowHint.gameObject.SetActive(false);
         }
 
         /// <summary>
@@ -39,6 +41,26 @@ namespace StreamerReborn
         {
             base.Tick(dt);
             m_cardContainer?.Tick(dt);
+
+            // ÏÔÊ¾hint
+            if(m_cardContainer.PreviewCards.Count > 0)
+            {
+                m_arrowHint.gameObject.SetActive(true);
+                var fromPos = m_cardContainer.UseCardPreviewRoot.position;
+                var toPos = Vector3.zero;
+                {
+                    Vector3 screenPos = Camera.main.WorldToScreenPoint(transform.position);
+                    Vector3 mousePosOnScreen = Input.mousePosition;
+                    mousePosOnScreen.z = screenPos.z;
+                    toPos = Camera.main.ScreenToWorldPoint(mousePosOnScreen);
+                    toPos.z = fromPos.z;
+                }
+                m_arrowHint.SetParabolaPoints(fromPos, toPos, 10, m_arrowHint.HightDirection);
+            }
+            else
+            {
+                m_arrowHint.gameObject.SetActive(false);
+            }
         }
 
         #region ÊÂ¼þ
@@ -63,6 +85,10 @@ namespace StreamerReborn
 
         [AutoBind("./CardContainer")]
         public BattleCardContainer m_cardContainer;
+
+
+        [AutoBind("./ArrowHint")]
+        public ParabolaArrowController m_arrowHint;
 
         #endregion
     }

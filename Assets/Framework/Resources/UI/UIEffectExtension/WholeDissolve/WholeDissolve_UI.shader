@@ -17,7 +17,7 @@ Shader "UI/UIWholeDissolve"
 
         [Header(Dissolve)]
         _NoiseTex("Noise Texture (A)", 2D) = "white" {}
-        _DissolveRange("DissolveRange",Range(0,1.0)) = 0.5
+        _DissolveLocation("DissolveLocation",Range(0,1.0)) = 0.5
         _DissolveWidth("DissolveWidth",Range(0,1.0)) = 0.5
         _DissolveSoftness("DissolveSoftness",Range(0,1.0)) = 0.5
         _DissolveColor("DissolveColor", Color) = (1,1,1,1)
@@ -92,7 +92,7 @@ Shader "UI/UIWholeDissolve"
                 float4 _MainTex_ST;
                 sampler2D _NoiseTex;
                 float4 _NoiseTex_ST;
-                float _DissolveRange;
+                float _DissolveLocation;
                 float _DissolveWidth;
                 float _DissolveSoftness;
                 fixed4 _DissolveColor;
@@ -120,10 +120,10 @@ Shader "UI/UIWholeDissolve"
                     color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
                     #endif
 
-                    float2 noiseUV = float2(IN.srcPos.xy * _NoiseTex_ST + _NoiseTex_ST.zw);
+                    float2 noiseUV = float2((IN.srcPos.xy / IN.srcPos.w) * _NoiseTex_ST + _NoiseTex_ST.zw);
                     float cutout = tex2D(_NoiseTex, frac(noiseUV)).r;
                     _DissolveWidth = _DissolveWidth / 4;
-                    float factor = cutout - _DissolveRange * (1 + _DissolveWidth) + _DissolveWidth;
+                    float factor = cutout - _DissolveLocation * (1 + _DissolveWidth) + _DissolveWidth;
                     #ifdef UNITY_UI_ALPHACLIP
                     clip(min(color.a - 0.01, factor));
                     #endif
