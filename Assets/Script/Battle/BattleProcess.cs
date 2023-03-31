@@ -11,7 +11,12 @@ namespace StreamerReborn
 {
     public class BattleProcess : GameProcessBase
     {
+
         public const string MainSceneName = "Assets/Scenes/Battle.unity";
+
+        //逻辑层
+        private BattleManager m_mainBattle;
+        //private readonly BattleEventListener m_mainBattleListener = new BattleEventListener(); //监听事件
 
         /// <summary>
         /// 传入参数 加载
@@ -24,9 +29,6 @@ namespace StreamerReborn
         protected override void Initialize(GameProcessLoadPipeLineCtxBase pipeCtx)
         {
             base.Initialize(pipeCtx);
-
-            BattleAudienceManager = new BattleAudienceManager();
-
         }
 
         /// <summary>
@@ -42,18 +44,20 @@ namespace StreamerReborn
         public override void Tick(float dTime)
         {
             base.Tick(dTime);
-
-            BattleAudienceManager?.Tick(dTime);
         }
 
 
-        public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
-
-
         /// <summary>
-        /// 观众管理器
+        /// 添加观众事件
         /// </summary>
-        public BattleAudienceManager BattleAudienceManager;
+        public void OnEventAddAudience(BattleAudience newAudience)
+        {
+            // Find Empty Slot
+            var hud = UIControllerBattleHud.GetCurrentHud();
+            hud.AddAudience();
+        }
+
+        public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
     }
 }
 

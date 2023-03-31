@@ -7,7 +7,7 @@ namespace StreamerReborn
 {
     public class BattleAudienceManager : IBattleAudienceEnv
     {
-
+        public BattleManager Owner;
         /// <summary>
         /// Tick
         /// </summary>
@@ -75,6 +75,8 @@ namespace StreamerReborn
             }
 
             AudienceContainer.Add(newAudience.InstanceId, newAudience);
+            newAudience.Initialize();
+            newAudience.OnBorn();
 
             return newAudience;
         }

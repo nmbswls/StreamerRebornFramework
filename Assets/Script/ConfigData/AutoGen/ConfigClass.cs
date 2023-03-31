@@ -61,6 +61,8 @@ namespace StreamerReborn.Config {
 
         public String Image; // 图片
 
+        public List<int> Feature = new List<int>();
+
     }
 
 

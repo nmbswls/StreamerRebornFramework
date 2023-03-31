@@ -7,9 +7,14 @@ namespace StreamerReborn
 {
     public class CardInstanceInfo
     {
-        public long InstanceId { get; set; }
+        public uint InstanceId { get; set; }
 
         public ConfigDataCardBattleInfo Config { get; set; }
+
+        /// <summary>
+        /// 制造出来的临时卡片
+        /// </summary>
+        public bool IsTemp;
     }
 }
 

@@ -5,31 +5,40 @@ using UnityEngine;
 
 namespace StreamerReborn
 {
-    public class BattleManager : MonoBehaviour
+    public class BattleManager
     {
-        private static BattleManager m_instance;
-        public static BattleManager Instance { get{ return m_instance; } }
-
-
-        private void Awake()
+        public void Initialize()
         {
-            if(m_instance == null)
+            CardManager = new BattleCardManager();
+            CardResolveManager = new BattleCardResolveManager();
+            AudienceManager = new BattleAudienceManager();
+
+
+            CardManager.Owner = this;
+            CardResolveManager.Owner = this;
+            AudienceManager.Owner = this;
+        }
+        
+        public void Tick()
+        {
+            if (IsWait4Confirm())
             {
-                m_instance = this;
+                return;
             }
         }
 
+        
+
         /// <summary>
-        /// 仅供测试 
+        ///  
         /// </summary>
         public void BattleStart()
         {
             var battleProcess = GameStatic.GameProcessManager.GetBattleProcess();
-            battleProcess.BattleAudienceManager.EventOnAddAudience += OnEventAddAudience;
 
 
-            battleProcess.BattleAudienceManager.CreateBattleAudience(1, 0);
-            battleProcess.BattleAudienceManager.CreateBattleAudience(1, 0);
+            AudienceManager.CreateBattleAudience(1, 0);
+            AudienceManager.CreateBattleAudience(1, 0);
             {
                 var info = new CardInstanceInfo();
                 info.InstanceId = 0;
@@ -42,43 +51,37 @@ namespace StreamerReborn
                 info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(104);
                 AddCardFromDeck(info);
             }
+
         }
 
-        /// <summary>
-        /// 是否能使用
-        /// </summary>
-        /// <returns></returns>
-        public bool CanUseCard(CardInstanceInfo instanceInfo)
+        public void Tick(float dTime)
         {
-            return true;
+            
+
         }
+
+
+        public bool IsWait4Confirm()
+        {
+            return false;
+        }
+
+        
 
         public void AddCardFromDeck(CardInstanceInfo newCard)
         {
             EventOnAddCard?.Invoke(newCard);
         }
 
-        /// <summary>
-        /// 添加观众事件
-        /// </summary>
-        public void OnEventAddAudience(BattleAudience newAudience)
-        {
-            // Find Empty Slot
-            var hud = UIControllerBattleHud.GetCurrentHud();
-            hud.AddAudience();
-        }
 
-        #region 事件
+        #region 通知显示层事件事件
 
         /// <summary>
         /// 加入手牌
         /// </summary>
         public event Action<CardInstanceInfo> EventOnAddCard;
 
-        /// <summary>
-        /// 移除手牌
-        /// </summary>
-        public event Action<CardInstanceInfo> EventOnRemoveCard;
+        
 
         #endregion
 
@@ -94,7 +97,18 @@ namespace StreamerReborn
         /// </summary>
         public Dictionary<long, CardInstanceInfo> m_cardInstanceDict = new Dictionary<long, CardInstanceInfo>();
 
+        /// <summary>
+        /// 观众管理器
+        /// </summary>
+        public BattleAudienceManager AudienceManager;
+
+        public BattleCardResolveManager CardResolveManager;
+
+        public BattleCardManager CardManager;
+
         #endregion
+
+
 
     }
 }
