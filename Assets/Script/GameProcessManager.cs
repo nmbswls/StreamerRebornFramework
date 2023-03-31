@@ -20,6 +20,21 @@ namespace StreamerReborn
             }
         }
 
+        /// <summary>
+        /// ÁÙÊ±º¯Êý
+        /// </summary>
+        /// <returns></returns>
+        public BattleProcess GetBattleProcess()
+        {
+            foreach (var process in m_processList)
+            {
+                if(process is BattleProcess)
+                {
+                    return process;
+                }
+            }
+            return null;
+        }
 
         private event Action EventOnLoadingEnd;
 

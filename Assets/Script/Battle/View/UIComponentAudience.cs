@@ -10,11 +10,10 @@ using UnityEngine.UI;
 
 namespace StreamerReborn
 {
-    public class AudienceBase : UIComponentBase
+    public class UIComponentAudience : UIComponentBase
     {
 
         public int BindInfo;
-
 
         #region °ó¶¨ÇøÓò
 

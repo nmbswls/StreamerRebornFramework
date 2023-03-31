@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 namespace StreamerReborn
 {
-    public class BattleCard : UIComponentBase
+    public class UIComponentBattleCard : UIComponentBase
     {
         /// <summary>
         /// Owner
@@ -74,6 +74,8 @@ namespace StreamerReborn
             InitCardAppearence();
 
             CardClickArea.onClick.AddListener(OnClick);
+
+
         }
 
         /// <summary>
@@ -192,7 +194,9 @@ namespace StreamerReborn
         /// </summary>
         protected void OnClick()
         {
-            if(m_state != EnumPositionState.InHand)
+            wholeDissolveController.StartDissolve();
+
+            if (m_state != EnumPositionState.InHand)
             {
                 return;
             }

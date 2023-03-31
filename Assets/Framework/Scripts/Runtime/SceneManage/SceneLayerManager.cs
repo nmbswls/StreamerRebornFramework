@@ -583,6 +583,32 @@ namespace My.Framework.Runtime.Scene
         }
 
         /// <summary>
+        /// 获取ui物体对应camera
+        /// </summary>
+        /// <param name="go"></param>
+        /// <returns></returns>
+        public Camera GetUICamera(GameObject go)
+        {
+            Canvas canvas = GetCanvas(go);
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                return canvas.worldCamera;
+            }
+            return null;
+        }
+
+        public Canvas GetCanvas(GameObject go)
+        {
+            Canvas canvas = null;
+            SceneLayerUI uiSceneLayer = GetSceneLayer(go) as SceneLayerUI;
+            if (uiSceneLayer != null)
+            {
+                canvas = uiSceneLayer.LayerCanvas;
+            }
+            return canvas;
+        }
+
+        /// <summary>
         /// 更新栈
         /// </summary>
         private void UpdateLayerStack()

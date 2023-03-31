@@ -115,7 +115,7 @@ namespace My.Framework.Runtime
         /// tick
         /// </summary>
         /// <param name="dTime"></param>
-        public void Tick(float dTime)
+        public virtual void Tick(float dTime)
         {
             // 处理pipline队列
             {

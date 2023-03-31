@@ -28,16 +28,16 @@ public class ParabolaArrowController : MonoBehaviour
 
     private void OnValidate()
     {
-        SetParabolaPoints(FromPos, EndPos, HeightValue, HightDirection);
+        SetParabolaPoints(FromPos, EndPos, HeightValue);
     }
 
 
-    public void SetParabolaPoints(Vector3 startPoint, Vector3 endPoint, float height, Vector3 gravityDirection)
+    public void SetParabolaPoints(Vector3 startPoint, Vector3 endPoint, float height)
     {
         lineRenderer.positionCount = Resolution + 1;
         Vector3[] points = new Vector3[Resolution + 1];
 
-        Vector3 apexPoint = CalculateApexPoint(startPoint, endPoint, height, gravityDirection);
+        Vector3 apexPoint = CalculateApexPoint(startPoint, endPoint, height, HightDirection);
 
         for (int i = 0; i <= Resolution; i++)
         {

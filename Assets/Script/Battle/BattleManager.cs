@@ -18,11 +18,18 @@ namespace StreamerReborn
                 m_instance = this;
             }
         }
+
         /// <summary>
         /// 仅供测试 
         /// </summary>
         public void BattleStart()
         {
+            var battleProcess = GameStatic.GameProcessManager.GetBattleProcess();
+            battleProcess.BattleAudienceManager.EventOnAddAudience += OnEventAddAudience;
+
+
+            battleProcess.BattleAudienceManager.CreateBattleAudience(1, 0);
+            battleProcess.BattleAudienceManager.CreateBattleAudience(1, 0);
             {
                 var info = new CardInstanceInfo();
                 info.InstanceId = 0;
@@ -49,6 +56,16 @@ namespace StreamerReborn
         public void AddCardFromDeck(CardInstanceInfo newCard)
         {
             EventOnAddCard?.Invoke(newCard);
+        }
+
+        /// <summary>
+        /// 添加观众事件
+        /// </summary>
+        public void OnEventAddAudience(BattleAudience newAudience)
+        {
+            // Find Empty Slot
+            var hud = UIControllerBattleHud.GetCurrentHud();
+            hud.AddAudience();
         }
 
         #region 事件

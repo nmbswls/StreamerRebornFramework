@@ -11,7 +11,6 @@ namespace StreamerReborn
 {
     public class BattleProcess : GameProcessBase
     {
-
         public const string MainSceneName = "Assets/Scenes/Battle.unity";
 
         /// <summary>
@@ -26,6 +25,8 @@ namespace StreamerReborn
         {
             base.Initialize(pipeCtx);
 
+            BattleAudienceManager = new BattleAudienceManager();
+
         }
 
         /// <summary>
@@ -38,8 +39,21 @@ namespace StreamerReborn
         }
 
         
+        public override void Tick(float dTime)
+        {
+            base.Tick(dTime);
+
+            BattleAudienceManager?.Tick(dTime);
+        }
+
 
         public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
+
+
+        /// <summary>
+        /// 观众管理器
+        /// </summary>
+        public BattleAudienceManager BattleAudienceManager;
     }
 }
 

@@ -8,14 +8,12 @@ using UnityEngine;
 [CustomEditor(typeof(WholeDissolveController))]
 public class WholeDissolveControllerEditor : Editor
 {
-	float _location;
-	Vector2 _scale;
-
+	float _effectFactor;
 
 	protected void OnEnable()
 	{
 		var tempTarget = target as WholeDissolveController;
-		_location = tempTarget.DissolveProgress;
+		_effectFactor = tempTarget.EffectFactor;
 	}
 
 	public override void OnInspectorGUI()
@@ -24,10 +22,10 @@ public class WholeDissolveControllerEditor : Editor
 
 		var tempTarget = target as WholeDissolveController;
 
-		GUILayout.Label("消融范围");
-		_location = EditorGUILayout.Slider(_location, 0, 1);
+		GUILayout.Label("消融参数");
+		_effectFactor = EditorGUILayout.Slider(_effectFactor, 0, 1);
 
-		tempTarget.DissolveProgress = _location;
+		tempTarget.EffectFactor = _effectFactor;
 	}
 }
 

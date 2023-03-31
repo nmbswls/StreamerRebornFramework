@@ -40,6 +40,11 @@ namespace StreamerReborn
         {
             get { return (GameManager.Instance) as MyGameManager; }
         }
+
+        public static GameProcessManager GameProcessManager
+        {
+            get { return ((MyGameManager)GameManager.Instance).ProcessManager; }
+        }
     }
 
 

@@ -50,7 +50,7 @@ namespace My.Framework.UIExtension.Editor
 			if (BeginCommonPanel("Dissolve", true))
 			{
 				EditorGUI.indentLevel++;
-				DoTexture2D("_NoiseTex", "Texture");
+				DoTexture2D("_NoiseTex", "Texture", true);
 
 				ColorMode color =
 					currentMaterial.IsKeywordEnabled("ADD") ? ColorMode.Add

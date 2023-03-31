@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static StreamerReborn.BattleCard;
+using static StreamerReborn.UIComponentBattleCard;
 
 namespace StreamerReborn
 {
@@ -151,23 +151,28 @@ namespace StreamerReborn
         }
 
         /// <summary>
+        /// 正在选择目标
+        /// </summary>
+        /// <returns></returns>
+        public bool IsPreviewChooseTarget()
+        {
+            if(PreviewCards.Count == 0)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// 放到来牌的位置
         /// </summary>
         /// <param name="card"></param>
-        public void PutToInitPos(BattleCard card)
+        public void PutToInitPos(UIComponentBattleCard card)
         {
             card.PosDirty = true;
             card.TargetPositionInHand = 1;
         }
 
-        /// <summary>
-        /// 是否选择目标
-        /// </summary>
-        /// <returns></returns>
-        public bool IsPreviewChooseTarget()
-        {
-            return false;
-        }
 
         #region 移动卡片
 
@@ -175,7 +180,7 @@ namespace StreamerReborn
         /// 将卡片移到preview区
         /// </summary>
         /// <param name="card"></param>
-        public void MoveCard2Preview(BattleCard card)
+        public void MoveCard2Preview(UIComponentBattleCard card)
         {
             HandCards.Remove(card); 
             PreviewCards.Remove(card);
@@ -204,7 +209,7 @@ namespace StreamerReborn
             {
                 return;
             }
-            var card = cardGo.GetComponent<BattleCard>();
+            var card = cardGo.GetComponent<UIComponentBattleCard>();
             card.name = card.name.Replace("(Clone)","");
             card.Init(instanceInfo, this);
             card.BindFields();
@@ -427,7 +432,7 @@ namespace StreamerReborn
         /// 获取鼠标悬浮的卡牌
         /// </summary>
         /// <returns></returns>
-        protected BattleCard GetMouseOverBattleCard()
+        protected UIComponentBattleCard GetMouseOverBattleCard()
         {
             EventSystem uiEventSystem = EventSystem.current;
             if(uiEventSystem == null)
@@ -443,7 +448,7 @@ namespace StreamerReborn
                 {
                     if(obj.gameObject.name == "CardRoot")
                     {
-                        return obj.gameObject.GetComponentInParent<BattleCard>();
+                        return obj.gameObject.GetComponentInParent<UIComponentBattleCard>();
                     }
                 }
             }
@@ -458,7 +463,7 @@ namespace StreamerReborn
         /// <returns></returns>
         protected void ReArrangeHandCards()
         {
-            var newList = new List<BattleCard>();
+            var newList = new List<UIComponentBattleCard>();
             int leftCardCount = 0;
             for(int i=0;i<HandCards.Count;i++)
             {
@@ -482,12 +487,12 @@ namespace StreamerReborn
         /// <summary>
         /// 预览中卡组
         /// </summary>
-        public List<BattleCard> PreviewCards = new List<BattleCard>();
+        public List<UIComponentBattleCard> PreviewCards = new List<UIComponentBattleCard>();
 
         /// <summary>
         /// 手牌组
         /// </summary>
-        public List<BattleCard> HandCards = new List<BattleCard>();
+        public List<UIComponentBattleCard> HandCards = new List<UIComponentBattleCard>();
 
         #region 缓存
 

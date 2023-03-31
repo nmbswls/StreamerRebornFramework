@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: DissolveAll_TMP_Sprite
-  m_Shader: {fileID: 4800000, guid: da426cfde2754914b8fb2a608c45d867, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0cf72d7d88aaa584aa774852dca9cb58, type: 3}
   m_ValidKeywords:
   - FILL
   m_InvalidKeywords: []

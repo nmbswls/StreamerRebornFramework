@@ -164,5 +164,5 @@ Shader "UI/UIWholeDissolve-TMP-Sprite"
 		ENDCG
 		}
 	}
-CustomEditor "TMP_SDFShaderGUI_Dissolve"
+CustomEditor "My.Framework.UIExtension.Editor.TMP_SDFShaderGUI_Dissolve"
 }
