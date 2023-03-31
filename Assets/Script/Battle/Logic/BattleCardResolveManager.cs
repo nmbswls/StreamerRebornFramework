@@ -14,6 +14,14 @@ namespace StreamerReborn
         AudienceSatisfied,
         AudienceLeave,
     }
+
+    public enum ChainExecStatus
+    {
+        Invalid,
+        Success,
+        Waiting,
+    }
+
     public class ChainNodeBase
     {
         public virtual EnumChainNodeType Type
@@ -26,14 +34,17 @@ namespace StreamerReborn
         {
             
         }
-
-        // 抛出表现
     }
 
     public class ChainNodeUseCard : ChainNodeBase
     {
         public CardInstanceInfo m_cardInstance;
         public uint Target;
+
+        /// <summary>
+        /// 当前point
+        /// </summary>
+        private int m_currPoint = 0;
 
         public ChainNodeUseCard() : base()
         {
@@ -61,17 +72,27 @@ namespace StreamerReborn
         }
     }
 
-    public class ChainContext
+    /// <summary>
+    /// 连锁构造现场 构造完成后才能执行
+    /// </summary>
+    public class ChainBuildContext
     {
-        public ChainNodeBase HeadNode;
+        public int StartPointId;
+
+        public List<ChainNodeBase> ChainNodes = new List<ChainNodeBase>();
+
         public bool m_needBreak;
+
         public bool m_isWaiting; // 能否挪到上层
 
-        public void Clear()
-        {
-            m_needBreak = false;
-            m_isWaiting = false;
-        }
+        //public void Clear()
+        //{
+        //    HeadNode = null;
+        //    Iter = null;
+
+        //    m_needBreak = false;
+        //    m_isWaiting = false;
+        //}
     }
 
     /// <summary>
@@ -88,73 +109,67 @@ namespace StreamerReborn
         /// <param name="dt"></param>
         public void Tick(float dt)
         {
-            HandleChain();
+            TicBuildChain();
         }
 
 
         /// <summary>
-        /// 将卡加入连锁
+        /// 开启新连锁 主动使用/结算中被动效果触发
         /// </summary>
-        public void PutCardInChain()
+        public void CreateUseCardCtx()
         {
-            ChainNodeBase newNode = new ChainNodeUseCard();
-            ChainHeadNodes.Add(newNode);
+            var newCtx = new ChainBuildContext();
+            ChainContextList.Add(newCtx);
+        }
+
+        /// <summary>
+        /// 加入连锁
+        /// </summary>
+        public void AddChain()
+        {
         }
 
         /// <summary>
         /// 将Perk加入连锁
         /// </summary>
-        public void PushPerk(int perkInfo)
+        public void PushPerkTrigger(int perkInfo)
         {
-            var newNode = new ChainNodeAudiencePerk(perkInfo);
-            ChainHeadNodes.Add(newNode);
+            ChainContextList[0].ChainNodes.Add(new ChainNodeAudiencePerk(perkInfo));
         }
 
 
-        private void HandleChain()
+        public void endReact()
         {
-            if(ChainHeadNodes.Count != 0)
+            ChainContextList[0].m_isWaiting = false;
+        }
+
+        /// <summary>
+        /// 构建连锁
+        /// </summary>
+        private void TicBuildChain()
+        {
+            if(ChainContextList.Count == 0)
             {
-                var iter = ChainHeadNodes[0];
-                m_currCxt.Clear();
-                while (iter != null)
-                {
-                    switch(iter.Type)
-                    {
-                        case EnumChainNodeType.Card:
-                            {
-                                var cardNode = (ChainNodeUseCard)iter;
-                                ExcuteUseCard(cardNode);
-                            }
-                            break;
-                        case EnumChainNodeType.AudienceSatisfied:
-                            {
-
-                            }
-                            break;
-                    }
-
-                    iter = iter.Next;
-                }
-
-                iter = ChainHeadNodes[0];
-
-                // 处理完毕后执行路径上的清理
-                while (iter != null)
-                {
-                    switch (iter.Type)
-                    {
-                        case EnumChainNodeType.Card:
-                            {
-                                var cardNode = (ChainNodeUseCard)iter;
-                                Owner.CardManager.RemoveCardToDiscarded(cardNode.m_cardInstance);
-                            }
-                            break;
-                    }
-
-                    iter = iter.Next;
-                }
+                return;
             }
+            var chainCtx = ChainContextList[0];
+            // 正在等待响应
+            if (chainCtx.m_isWaiting)
+            {
+                return;
+            }
+
+            switch(chainCtx.StartPointId)
+            {
+                case 0: // 玩家攻击前
+                    {
+                        chainCtx.m_isWaiting = true;
+                        var cardNode = (ChainNodeUseCard)chainCtx.ChainNodes[0];
+                        EventOnBeforePlayerAttack?.Invoke(cardNode.m_cardInstance.InstanceId);
+                    }
+                    break;
+            }
+
         }
 
         #region 处理状态
@@ -166,10 +181,7 @@ namespace StreamerReborn
             //先确认分支 之后再后续处理
             List<int> effectToHandle = new List<int>();
 
-            foreach (var effect in effectToHandle)
-            {
-                HandleOneCardEffect(effect);
-            }
+            //m_currCxt.m_isWaiting = true;
         }
 
         /// <summary>
@@ -185,15 +197,23 @@ namespace StreamerReborn
             }
         }
 
-        /// <summary>
-        /// 连锁结算现场
-        /// </summary>
-        private ChainContext m_currCxt;
 
         #endregion
 
+        /// <summary>
+        /// 连锁结算现场
+        /// </summary>
+        public List<ChainBuildContext> ChainContextList = new List<ChainBuildContext>();
 
-        public List<ChainNodeBase> ChainHeadNodes = new List<ChainNodeBase>();
+        /// <summary>
+        /// 时点触发 玩家攻击前
+        /// </summary>
+        public event Action<int> EventOnWaitPlayerReact;
+
+        /// <summary>
+        /// 时点触发 玩家行动卡前
+        /// </summary>
+        public event Action<uint> EventOnBeforePlayerAttack;
     }
 }
 

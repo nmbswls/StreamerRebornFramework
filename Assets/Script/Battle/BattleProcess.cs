@@ -11,11 +11,10 @@ namespace StreamerReborn
 {
     public class BattleProcess : GameProcessBase
     {
-
         public const string MainSceneName = "Assets/Scenes/Battle.unity";
 
         //逻辑层
-        private BattleManager m_mainBattle;
+        public BattleManager MainBattle;
         //private readonly BattleEventListener m_mainBattleListener = new BattleEventListener(); //监听事件
 
         /// <summary>
@@ -56,6 +55,11 @@ namespace StreamerReborn
             var hud = UIControllerBattleHud.GetCurrentHud();
             hud.AddAudience();
         }
+
+        /// <summary>
+        /// 播放效果
+        /// </summary>
+        private List<object> m_effectList = new List<object>();
 
         public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
     }

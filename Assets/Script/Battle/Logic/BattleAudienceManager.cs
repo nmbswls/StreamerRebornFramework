@@ -94,7 +94,11 @@ namespace StreamerReborn
         #endregion
 
 
-        
+        public void OnPerkTrigger(BattleAudience audience, int perkInfo)
+        {
+            Owner.CardResolveManager.
+        }
+
         /// <summary>
         /// 等待移除列表
         /// </summary>

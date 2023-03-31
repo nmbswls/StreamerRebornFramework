@@ -192,6 +192,30 @@ namespace StreamerReborn
         #endregion
 
 
+        /// <summary>
+        /// 使用卡片
+        /// </summary>
+        public void UseCard()
+        {
+            if(m_isInReactMode)
+            {
+                // 上层调用 check react
+
+                // add node
+
+                //process
+                ResolveManager.AddChain();
+            }
+            else
+            {
+
+            }
+        }
+
+        public void EndReact()
+        {
+            ResolveManager.endReact(); //check是否在等待且是在react 如果是则放弃
+        }
 
 
         #region 显示通知事件
@@ -259,6 +283,17 @@ namespace StreamerReborn
             }
             HandCards[indexInHand].Disappaer();
             AdjustHandCards();
+        }
+
+        public void EventOnWaitPlayerReact()
+        {
+            // 进入反应状态
+            m_isInReactMode = true;
+
+            // 更新ui
+            // handle 使用卡片api
+            // 此时check 反应
+
         }
 
 
@@ -493,6 +528,11 @@ namespace StreamerReborn
         /// 手牌组
         /// </summary>
         public List<UIComponentBattleCard> HandCards = new List<UIComponentBattleCard>();
+
+        /// <summary>
+        /// 是否在反应模式
+        /// </summary>
+        public bool m_isInReactMode;
 
         #region 缓存
 
