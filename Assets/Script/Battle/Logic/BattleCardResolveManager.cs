@@ -22,21 +22,27 @@ namespace StreamerReborn
         Waiting,
     }
 
-    public class ChainNodeBase
+    /// <summary>
+    /// 结算节点
+    /// </summary>
+    public class ResolveNodeBase
     {
+
         public virtual EnumChainNodeType Type
         {
             get { return EnumChainNodeType.Invalid; }
         }
-        public ChainNodeBase Next;
 
-        public ChainNodeBase()
+        public bool IsResolving { get; set; }
+
+        public ResolveNodeBase()
         {
             
         }
+
     }
 
-    public class ChainNodeUseCard : ChainNodeBase
+    public class ChainNodeUseCard : ResolveNodeBase
     {
         public CardInstanceInfo m_cardInstance;
         public uint Target;
@@ -55,10 +61,9 @@ namespace StreamerReborn
         {
             get { return EnumChainNodeType.Card; }
         }
-        // 抛出表现
     }
 
-    public class ChainNodeAudiencePerk : ChainNodeBase
+    public class ChainNodeAudiencePerk : ResolveNodeBase
     {
         public int perkInfo;
         public ChainNodeAudiencePerk(int perkInfo) : base()
@@ -73,13 +78,11 @@ namespace StreamerReborn
     }
 
     /// <summary>
-    /// 连锁构造现场 构造完成后才能执行
+    /// 卡片结算现场
     /// </summary>
-    public class ChainBuildContext
+    public class CardResolveContext
     {
-        public int StartPointId;
-
-        public List<ChainNodeBase> ChainNodes = new List<ChainNodeBase>();
+        public List<ResolveNodeBase> ChainNodes = new List<ResolveNodeBase>();
 
         public bool m_needBreak;
 
@@ -101,7 +104,7 @@ namespace StreamerReborn
     public class BattleCardResolveManager
     {
         public BattleManager Owner;
-
+        public IBattleProcessHandler BattleProcessHandler;
 
         /// <summary>
         /// Tick
@@ -109,7 +112,20 @@ namespace StreamerReborn
         /// <param name="dt"></param>
         public void Tick(float dt)
         {
-            TicBuildChain();
+            if(Context != null)
+            {
+                while (Context.ChainNodes.Count > 0)
+                {
+                    var firstNode = Context.ChainNodes[0];
+                    HandleResolve(firstNode);
+                    // 正在解算中 跳出
+                    if (firstNode.IsResolving)
+                    {
+                        break;
+                    }
+                    Context.ChainNodes.RemoveAt(0);
+                };
+            }
         }
 
 
@@ -118,7 +134,7 @@ namespace StreamerReborn
         /// </summary>
         public void CreateUseCardCtx()
         {
-            var newCtx = new ChainBuildContext();
+            var newCtx = new CardResolveContext();
             ChainContextList.Add(newCtx);
         }
 
@@ -137,42 +153,20 @@ namespace StreamerReborn
             ChainContextList[0].ChainNodes.Add(new ChainNodeAudiencePerk(perkInfo));
         }
 
+        #region 处理状态
 
-        public void endReact()
+
+        public void HandleResolve(ResolveNodeBase node)
         {
-            ChainContextList[0].m_isWaiting = false;
-        }
-
-        /// <summary>
-        /// 构建连锁
-        /// </summary>
-        private void TicBuildChain()
-        {
-            if(ChainContextList.Count == 0)
+            switch(node.Type)
             {
-                return;
-            }
-            var chainCtx = ChainContextList[0];
-            // 正在等待响应
-            if (chainCtx.m_isWaiting)
-            {
-                return;
-            }
-
-            switch(chainCtx.StartPointId)
-            {
-                case 0: // 玩家攻击前
+                case EnumChainNodeType.Card:
                     {
-                        chainCtx.m_isWaiting = true;
-                        var cardNode = (ChainNodeUseCard)chainCtx.ChainNodes[0];
-                        EventOnBeforePlayerAttack?.Invoke(cardNode.m_cardInstance.InstanceId);
+                        ExcuteUseCard((ChainNodeUseCard)node);
                     }
                     break;
             }
-
         }
-
-        #region 处理状态
 
         public void ExcuteUseCard(ChainNodeUseCard cardNode)
         {
@@ -182,6 +176,7 @@ namespace StreamerReborn
             List<int> effectToHandle = new List<int>();
 
             //m_currCxt.m_isWaiting = true;
+            BattleProcessHandler.PushProcess(null);
         }
 
         /// <summary>
@@ -200,10 +195,12 @@ namespace StreamerReborn
 
         #endregion
 
+        public CardResolveContext Context = null;
+
         /// <summary>
         /// 连锁结算现场
         /// </summary>
-        public List<ChainBuildContext> ChainContextList = new List<ChainBuildContext>();
+        public List<CardResolveContext> ChainContextList = new List<CardResolveContext>();
 
         /// <summary>
         /// 时点触发 玩家攻击前

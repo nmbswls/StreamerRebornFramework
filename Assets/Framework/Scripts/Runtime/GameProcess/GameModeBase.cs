@@ -12,7 +12,7 @@ namespace My.Framework.Runtime
     /// 更新管线现场
     /// </summary>
 
-    public partial class GameProcessLoadPipeLineCtxBase
+    public partial class GameModeLoadPipeLineCtxBase
     {
         public virtual bool Start()
         {
@@ -69,7 +69,7 @@ namespace My.Framework.Runtime
     /// <summary>
     /// 游戏
     /// </summary>
-    public class GameProcessBase
+    public class GameModeBase
     {
         /// <summary>
         /// 主scene
@@ -99,7 +99,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 加载场景进入内存
         /// </summary>
-        protected bool StartUpdatePipeline(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected bool StartUpdatePipeline(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             // 判断是否使用默认的管线现场
             StartPipeLineCtx(pipeCtx);
@@ -130,10 +130,12 @@ namespace My.Framework.Runtime
 
         #region 供子类重写
 
+        public virtual bool IsReserve { get { return false; } }
+
         /// <summary>
         /// 初始化
         /// </summary>
-        protected virtual void Initialize(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual void Initialize(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             if (pipeCtx.m_updateViewAction != null)
             {
@@ -145,7 +147,7 @@ namespace My.Framework.Runtime
         /// 收集场景
         /// </summary>
         /// <returns></returns>
-        protected virtual List<string> CollectScenes4Load(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual List<string> CollectScenes4Load(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             return new List<string>() { MainSceneResPath };
         }
@@ -155,7 +157,7 @@ namespace My.Framework.Runtime
         /// 收集需要加载的动态资源的路径
         /// </summary>
         /// <returns></returns>
-        protected virtual List<string> CollectAllDynamicResForLoad(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual List<string> CollectAllDynamicResForLoad(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             return null;
         }
@@ -164,13 +166,12 @@ namespace My.Framework.Runtime
         /// 创建PipeLineCtx实例
         /// </summary>
         /// <returns></returns>
-        protected virtual GameProcessLoadPipeLineCtxBase CreatePipeLineCtx()
+        protected virtual GameModeLoadPipeLineCtxBase CreatePipeLineCtx()
         {
-            return new GameProcessLoadPipeLineCtxBase();
+            return new GameModeLoadPipeLineCtxBase();
         }
 
         #endregion
-
 
 
         #region 管线处理
@@ -180,7 +181,7 @@ namespace My.Framework.Runtime
         /// </summary>
         /// <param name="pipeCtx"></param>
         /// <returns></returns>
-        protected virtual bool StartPipeLineCtx(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual bool StartPipeLineCtx(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             if (pipeCtx == null || !pipeCtx.Start())
             {
@@ -196,7 +197,7 @@ namespace My.Framework.Runtime
         /// 清理管线现场
         /// </summary>
         /// <param name="pipeCtx"></param>
-        protected virtual void ReleasePipeLineCtx(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual void ReleasePipeLineCtx(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             pipeCtx.Clear();
             m_runingPipeLineCtxList.Remove(pipeCtx);
@@ -210,9 +211,9 @@ namespace My.Framework.Runtime
         /// 分配一个管线现场
         /// </summary>
         /// <returns></returns>
-        protected virtual GameProcessLoadPipeLineCtxBase AllocPipeLineCtx()
+        protected virtual GameModeLoadPipeLineCtxBase AllocPipeLineCtx()
         {
-            GameProcessLoadPipeLineCtxBase ret;
+            GameModeLoadPipeLineCtxBase ret;
             if (m_unusingPipeLineCtxList.Count != 0)
             {
                 ret = m_unusingPipeLineCtxList[m_unusingPipeLineCtxList.Count - 1];
@@ -230,22 +231,22 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 默认管线现场
         /// </summary>
-        protected GameProcessLoadPipeLineCtxBase m_pipeCtxDefault = new GameProcessLoadPipeLineCtxBase();
+        protected GameModeLoadPipeLineCtxBase m_pipeCtxDefault = new GameModeLoadPipeLineCtxBase();
 
         /// <summary>
         /// 正在运行的管线现场的列表
         /// </summary>
-        protected List<GameProcessLoadPipeLineCtxBase> m_runingPipeLineCtxList = new List<GameProcessLoadPipeLineCtxBase>();
+        protected List<GameModeLoadPipeLineCtxBase> m_runingPipeLineCtxList = new List<GameModeLoadPipeLineCtxBase>();
 
         /// <summary>
         /// 没有使用的管线现场
         /// </summary>
-        protected List<GameProcessLoadPipeLineCtxBase> m_unusingPipeLineCtxList = new List<GameProcessLoadPipeLineCtxBase>();
+        protected List<GameModeLoadPipeLineCtxBase> m_unusingPipeLineCtxList = new List<GameModeLoadPipeLineCtxBase>();
 
         /// <summary>
         /// 等待启动的管线
         /// </summary>
-        protected List<GameProcessLoadPipeLineCtxBase> m_pipeLineWait2Start = new List<GameProcessLoadPipeLineCtxBase>();
+        protected List<GameModeLoadPipeLineCtxBase> m_pipeLineWait2Start = new List<GameModeLoadPipeLineCtxBase>();
 
         #endregion
 
@@ -255,7 +256,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 开始加载静态资源
         /// </summary>
-        protected virtual void StartLoadScene(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual void StartLoadScene(GameModeLoadPipeLineCtxBase pipeCtx)
         {
 
             List<string> scenes4Load = CollectScenes4Load(pipeCtx);
@@ -304,7 +305,7 @@ namespace My.Framework.Runtime
         /// </summary>
         /// <param name="resPathSet"></param>
         /// <param name="pipeCtx"></param>
-        protected virtual void StartLoadDynamicRes(GameProcessLoadPipeLineCtxBase pipeCtx, List<string> resPathList)
+        protected virtual void StartLoadDynamicRes(GameModeLoadPipeLineCtxBase pipeCtx, List<string> resPathList)
         {
             // 过滤出真正需要加载的资源
             if (resPathList == null || resPathList.Count == 0)
@@ -328,7 +329,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 当静态资源加载完成
         /// </summary>
-        protected virtual void OnLoadStaticResCompleted(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual void OnLoadStaticResCompleted(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             if (IsLoadAllResCompleted(pipeCtx)) OnLoadAllResCompleted(pipeCtx);
         }
@@ -336,7 +337,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 当动态资源加载完成
         /// </summary>
-        protected virtual void OnLoadDynamicResCompleted(GameProcessLoadPipeLineCtxBase pipeCtx, Dictionary<string, UnityEngine.Object> resDict)
+        protected virtual void OnLoadDynamicResCompleted(GameModeLoadPipeLineCtxBase pipeCtx, Dictionary<string, UnityEngine.Object> resDict)
         {
             if (resDict != null && resDict.Count != 0)
             {
@@ -357,7 +358,7 @@ namespace My.Framework.Runtime
         /// 是否所有的资源加载都完成了
         /// </summary>
         /// <returns></returns>
-        protected virtual bool IsLoadAllResCompleted(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual bool IsLoadAllResCompleted(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             return pipeCtx.m_loadingStaticResCorutineCount == 0 && pipeCtx.m_loadingDynamicResCorutineCount == 0;
         }
@@ -365,7 +366,7 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 当所有资源加载完成
         /// </summary>
-        protected virtual void OnLoadAllResCompleted(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected virtual void OnLoadAllResCompleted(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             // Push Layer
             if(pipeCtx.RetLayer != null)

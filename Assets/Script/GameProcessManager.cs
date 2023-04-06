@@ -24,11 +24,11 @@ namespace StreamerReborn
         /// ¡Ÿ ±∫Ø ˝
         /// </summary>
         /// <returns></returns>
-        public BattleProcess GetBattleProcess()
+        public GameModeBattle GetBattleProcess()
         {
             foreach (var process in m_processList)
             {
-                if(process is BattleProcess)
+                if(process is GameModeBattle)
                 {
                     return process;
                 }
@@ -71,7 +71,7 @@ namespace StreamerReborn
         {
             float timeOut = Time.realtimeSinceStartup;
 
-            var battleProcess = new BattleProcess() ;
+            var battleProcess = new GameModeBattle() ;
             m_processList.Add(battleProcess);
             bool isFinish = false;
             battleProcess.TryLoadBattleScene(() => {
@@ -105,7 +105,7 @@ namespace StreamerReborn
         }
 
 
-        List<BattleProcess> m_processList = new List<BattleProcess>();
+        List<GameModeBattle> m_processList = new List<GameModeBattle>();
 
         #region ¡Ÿ ±
 

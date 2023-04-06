@@ -9,7 +9,27 @@ using UnityEngine.SceneManagement;
 
 namespace StreamerReborn
 {
-    public class BattleProcess : GameProcessBase
+
+    public interface IBattleProcessHandler
+    {
+        void PushProcess(BattleProcess process);
+    }
+
+    public class BattleProcess
+    {
+        public bool IsFinish { get; set; }
+        public virtual void Tick()
+        {
+
+        }
+
+        public virtual void OnFinish()
+        {
+
+        }
+    }
+
+    public class GameModeBattle : GameModeBase, IBattleProcessHandler
     {
         public const string MainSceneName = "Assets/Scenes/Battle.unity";
 
@@ -25,7 +45,7 @@ namespace StreamerReborn
             TryStartLoad(MainSceneName, onEnd);
         }
 
-        protected override void Initialize(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected override void Initialize(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             base.Initialize(pipeCtx);
         }
@@ -34,7 +54,7 @@ namespace StreamerReborn
         /// 收集需要加载的动态资源的路径
         /// </summary>
         /// <returns></returns>
-        protected override List<string> CollectAllDynamicResForLoad(GameProcessLoadPipeLineCtxBase pipeCtx)
+        protected override List<string> CollectAllDynamicResForLoad(GameModeLoadPipeLineCtxBase pipeCtx)
         {
             return null;
         }
@@ -43,6 +63,21 @@ namespace StreamerReborn
         public override void Tick(float dTime)
         {
             base.Tick(dTime);
+
+            while(m_runningProcess.Count > 0)
+            {
+                var iter = m_runningProcess[0];
+                iter.Tick();
+                if(iter.IsFinish)
+                {
+                    iter.OnFinish();
+                    m_runningProcess.RemoveAt(0);
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
 
 
@@ -62,6 +97,15 @@ namespace StreamerReborn
         private List<object> m_effectList = new List<object>();
 
         public override string MainSceneResPath { get { return "Assets/Scenes/Battle.unity"; } }
+
+        public void PushProcess(BattleProcess process)
+        {
+            m_runningProcess.Add(process);
+        }
+
+        private List<BattleProcess> m_runningProcess = new List<BattleProcess>();
     }
+
+    
 }
 
