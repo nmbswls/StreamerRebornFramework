@@ -7,6 +7,24 @@ namespace StreamerReborn
 {
     public class BattleManager
     {
+
+        public static BattleManager Instance
+        {
+            get
+            {
+                if(GameStatic.GameProcessManager == null)
+                {
+                    return null;
+                }
+                var process = GameStatic.GameProcessManager.GetBattleProcess();
+                if(process == null)
+                {
+                    return null;
+                }
+                return process.MainBattle;
+            }
+        }
+
         public void Initialize()
         {
             CardManager = new BattleCardManager();

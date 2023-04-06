@@ -42,7 +42,7 @@ namespace StreamerReborn
             {
                 return false;
             }
-            Owner.CardResolveManager.PutCardInChain();
+            //Owner.CardResolveManager.PutCardInChain();
             return true;
         }
 

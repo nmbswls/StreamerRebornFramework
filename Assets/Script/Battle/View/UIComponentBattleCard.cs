@@ -181,7 +181,7 @@ namespace StreamerReborn
         /// </summary>
         private void UseCard()
         {
-            if (!BattleManager.Instance.CanUseCard(InstanceInfo))
+            if (!BattleManager.Instance.CardManager.CanUseCard(InstanceInfo))
             {
                 return;
             }

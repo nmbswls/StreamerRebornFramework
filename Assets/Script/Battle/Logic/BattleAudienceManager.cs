@@ -96,7 +96,7 @@ namespace StreamerReborn
 
         public void OnPerkTrigger(BattleAudience audience, int perkInfo)
         {
-            Owner.CardResolveManager.
+            //Owner.CardResolveManager.
         }
 
         /// <summary>

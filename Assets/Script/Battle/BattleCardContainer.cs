@@ -118,7 +118,7 @@ namespace StreamerReborn
         private void RegisterEvent()
         {
             BattleManager.Instance.EventOnAddCard += OnAddCard;
-            BattleManager.Instance.EventOnRemoveCard += OnRemoveHandCard;
+            //BattleManager.Instance.EventOnRemoveCard += OnRemoveHandCard;
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace StreamerReborn
         private void UnRegisterEvent()
         {
             BattleManager.Instance.EventOnAddCard -= OnAddCard;
-            BattleManager.Instance.EventOnRemoveCard -= OnRemoveHandCard;
+            //BattleManager.Instance.EventOnRemoveCard -= OnRemoveHandCard;
         }
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace StreamerReborn
                 // add node
 
                 //process
-                ResolveManager.AddChain();
+                //ResolveManager.AddChain();
             }
             else
             {
@@ -214,7 +214,7 @@ namespace StreamerReborn
 
         public void EndReact()
         {
-            ResolveManager.endReact(); //check是否在等待且是在react 如果是则放弃
+            //ResolveManager.endReact(); //check是否在等待且是在react 如果是则放弃
         }
 
 
