@@ -175,8 +175,9 @@ namespace StreamerReborn
             //先确认分支 之后再后续处理
             List<int> effectToHandle = new List<int>();
 
-            //m_currCxt.m_isWaiting = true;
-            BattleProcessHandler.PushProcess(null);
+            BattleProcessHandler.PushProcess(new BattleProcessPlayCardEffect(cardInfo.InstanceId, 0.5f));
+
+            cardNode.IsResolving = true;
         }
 
         /// <summary>

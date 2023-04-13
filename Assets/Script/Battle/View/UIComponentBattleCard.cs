@@ -110,10 +110,7 @@ namespace StreamerReborn
 
             CardRoot.anchoredPosition = m_shakingVector;
 
-            if(Input.GetKeyDown(KeyCode.S))
-            {
-                wholeDissolveController.StartDissolve();
-            }
+            
         }
 
         /// <summary>
@@ -237,6 +234,16 @@ namespace StreamerReborn
         #endregion
 
         /// <summary>
+        /// 开始溶解
+        /// </summary>
+        public void ShowDissolve()
+        {
+            {
+                wholeDissolveController.StartDissolve();
+            }
+        }
+
+        /// <summary>
         /// 播放
         /// </summary>
         public void Disappaer()
@@ -244,6 +251,7 @@ namespace StreamerReborn
             //m_animator.SetTrigger("Disappear");
             //m_state = EnumPositionState.Destroying;
             //CardClickArea.blocksRaycasts = false;
+            Recycle();
         }
 
         /// <summary>

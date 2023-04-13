@@ -173,6 +173,29 @@ namespace StreamerReborn
             card.TargetPositionInHand = 1;
         }
 
+        /// <summary>
+        /// 获取指定card
+        /// </summary>
+        /// <param name="instanceId"></param>
+        /// <returns></returns>
+        public UIComponentBattleCard GetCardUIComponent(uint instanceId)
+        {
+            foreach(var card in PreviewCards)
+            {
+                if(card.InstanceInfo.InstanceId == instanceId)
+                {
+                    return card;
+                }
+            }
+            foreach (var card in HandCards)
+            {
+                if (card.InstanceInfo.InstanceId == instanceId)
+                {
+                    return card;
+                }
+            }
+            return null;
+        }
 
         #region 移动卡片
 

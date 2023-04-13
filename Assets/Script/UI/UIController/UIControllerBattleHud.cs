@@ -102,7 +102,7 @@ namespace StreamerReborn
         /// <summary>
         /// 主component
         /// </summary>
-        protected UIComponentBattleHud m_compHud;
+        public UIComponentBattleHud m_compHud;
 
         #region 装配信息
 
