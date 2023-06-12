@@ -2,10 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace My.Framework.Runtime.Scene
+namespace My.Framework.Runtime.UI
 {
-    public class SceneLayer3D : SceneLayerBase
+    /// <summary>
+    /// 包含模型等资源的3d类型ui层
+    /// </summary>
+    public class UILayer3D : UILayerBase
     {
+        /// <summary>
+        /// 层类型
+        /// </summary>
+        public override UILayerType LayerType { get { return UILayerType.ThreeD; } }
+
         /// <summary>
         /// 获取层对应的camera
         /// </summary>

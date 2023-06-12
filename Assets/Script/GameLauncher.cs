@@ -36,12 +36,8 @@ namespace StreamerReborn
 
             yield return null;
 
-            GameStatic.UIManager.RegisterUIController("EntryStartup", typeof(UIControllerEntryStartup).ToString(), 0);
-
-            GameStatic.UIManager.RegisterUIController("Loading", typeof(UIControllerLoading).ToString(), 0);
-            GameStatic.UIManager.RegisterUIController("MessageBox", typeof(UIControllerMessageBoxSimple).ToString(), 0);
-
-            GameStatic.UIManager.RegisterUIController("BattleHud", typeof(UIControllerBattleHud).ToString(), 0);
+            // 注册ui资源
+            GameStatic.UIManager.InitUITaskRegister<UIRegisterBase>();
 
             // 启动进门ui
             var entryUI = GameStatic.UIManager.StartUIController(new UIIntent("EntryStartup")) as UIControllerEntryStartup;
@@ -49,7 +45,7 @@ namespace StreamerReborn
             {
                 Debug.LogError("SampleGameEntryUITask start fail");
             }
-            entryUI.EventOnEnter += GameStatic.MyGameManager.EnterBattle;
+            entryUI.EventOnEnter += GameStatic.MyGameManager.GameWorld.EnterHall;
         }
 
         void Update()

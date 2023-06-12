@@ -3,12 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using UnityEngine;
 
 namespace My.Framework.Runtime.Saving
 {
+
     public class SavingManagerBase
     {
         /// <summary>
@@ -16,9 +19,9 @@ namespace My.Framework.Runtime.Saving
         /// </summary>
         public virtual bool Initialize()
         {
+            RegisterSavingUnit();
             return true;
         }
-
 
         /// <summary>
         /// tick一下
@@ -27,6 +30,7 @@ namespace My.Framework.Runtime.Saving
         {
 
         }
+
         /// <summary>
         /// 新存档
         /// </summary>
@@ -37,23 +41,46 @@ namespace My.Framework.Runtime.Saving
             InitFromConfig();
         }
 
+        /// <summary>
+        /// 检查是否有存档
+        /// </summary>
+        /// <returns></returns>
+        public bool HasAnySaving()
+        {
+            // check 每个存档栏位
+            for(int saveIdx = 0; saveIdx < MaxSaveCount; saveIdx++)
+            {
+                var savePath = GetSavePathByIdx(saveIdx);
+                FileInfo saveFileInfo = new FileInfo(savePath);
+                if (saveFileInfo.Exists)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 加载存档
+        /// </summary>
+        /// <param name="saveIdx"></param>
+        /// <returns></returns>
         public bool LoadSaving(int saveIdx)
         {
             var savePath = GetSavePathByIdx(saveIdx);
-            if (!LoadSavingFiles(savePath, out var retList))
+            if (!LoadSavingFiles(savePath, out byte[] content))
             {
                 return false;
             }
-            RestructFromPersistent(retList);
+
+            // 读取存档
+            RestructFromSaving(content);
+
             return true;
         }
 
         public void WriteSavingData(int saveIdx = 0)
         {
-            if (saveIdx == 0)
-            {
-                saveIdx = CurrSaveIndex;
-            }
             var savingDatas = CollectAndFillSaveData();
 
             if(!Directory.Exists(SavePathRoot))
@@ -63,7 +90,6 @@ namespace My.Framework.Runtime.Saving
 
             FileStream stream = null;
             var savePath = GetSavePathByIdx(saveIdx);
-
 
             foreach(var pair in savingDatas)
             {
@@ -110,10 +136,9 @@ namespace My.Framework.Runtime.Saving
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public bool LoadSavingFiles(string savePath, out Dictionary<string, byte[]> saveData)
+        public bool LoadSavingFiles(string savePath, out byte[] saveData)
         {
-            saveData = new Dictionary<string, byte[]>();
-
+            saveData = null;
             var fileList = new List<FileInfo>();
             FileInfo saveFileInfo = new FileInfo(savePath);
             if (!saveFileInfo.Exists)
@@ -125,6 +150,7 @@ namespace My.Framework.Runtime.Saving
             foreach (var fileInfo in fileList)
             {
                 // 进行文件的反序列化
+                // 存档格式 魔数 + 缩略 + 内容
                 using (var fstream = File.OpenRead(savePath))
                 {
                     try
@@ -141,7 +167,7 @@ namespace My.Framework.Runtime.Saving
                         int dataLen = br.ReadInt32();
                         var dataBytes = br.ReadBytes(dataLen);
 
-                        saveData.Add(fileInfo.Name, dataBytes);
+                        saveData = dataBytes;
                         return true;
                     }
                     catch (Exception e)
@@ -208,24 +234,41 @@ namespace My.Framework.Runtime.Saving
             CollectSaveFile();
         }
 
-
-        #region 供重写
-
         /// <summary>
-        /// 填充save
+        /// 填充save列表
+        /// key是存档单元名
+        /// value是存档单元数据
         /// </summary>
-        protected virtual Dictionary<string, byte[]> CollectAndFillSaveData()
+        protected Dictionary<string, byte[]> CollectAndFillSaveData()
         {
-            throw new NotImplementedException();
+            var savingObjs = new Dictionary<string, byte[]>();
+
+            foreach (var unit in m_savingUnitList)
+            {
+                string jsonStr = JsonConvert.SerializeObject(unit.GetSavingData());
+                savingObjs.Add(unit.SavingUnitName, Encoding.UTF8.GetBytes(jsonStr));
+            }
+
+            return savingObjs;
         }
 
         /// <summary>
         /// 初始化存档数据
         /// </summary>
         /// <param name="savingData"></param>
-        protected virtual void InitFromConfig()
+        protected void InitFromConfig()
         {
-            throw new NotImplementedException();
+            m_savingUnitList.Clear();
+
+            foreach (var regEntry in m_savingUnitRegEntryDict.Values)
+            {
+                var unit = Activator.CreateInstance(regEntry.UnitType) as SavingUnitBase;
+                if (unit == null)
+                {
+                    continue;
+                }
+                unit.InitEmpty();
+            }
         }
 
         /// <summary>
@@ -233,18 +276,49 @@ namespace My.Framework.Runtime.Saving
         /// </summary>
         /// <param name="savingData"></param>
         /// <param name="savingObjs"></param>
-        protected virtual void RestructFromPersistent(Dictionary<string, byte[]> savingObjs)
+        protected void RestructFromSaving(byte[] saveBytes)
         {
-            throw new NotImplementedException();
+            // 清空
+            m_savingUnitList.Clear();
+
+            string jsonStr = Encoding.UTF8.GetString(saveBytes);
+
+            var dataDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonStr);
+
+            foreach (var regEntry in m_savingUnitRegEntryDict.Values)
+            {
+                var unit = Activator.CreateInstance(regEntry.UnitType) as SavingUnitBase;
+                if(unit == null)
+                {
+                    continue;
+                }
+
+                if (!dataDict.TryGetValue(regEntry.UnitName, out var data))
+                {
+                    unit.InitEmpty();
+                }
+                else
+                {
+                    unit.ReconstructFromData(data);
+                }
+            }
         }
 
+
+        #region 供重写
+
+
+        /// 生成摘要信息
+        /// </summary>
+        /// <returns></returns>
         public virtual Dictionary<string, string> GenerateSaveSammary()
         {
-            return new Dictionary<string, string>();
+            var sammary = new Dictionary<string, string>();
+
+            return sammary;
         }
 
         #endregion
-
 
         /// <summary>
         /// 读取
@@ -306,26 +380,51 @@ namespace My.Framework.Runtime.Saving
         }
 
         public const uint MagicNum = 0xC0C0BBBB;
-        public const int MaxSaveCount = 10;
+
+        public int MaxSaveCount { get { return 10; } }
+
         protected string SavePathRoot
         {
             get { return Application.persistentDataPath + "/" + "save"; }
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public int CurrSaveIndex = 0;
-
-        ///// <summary>
-        ///// 是否是单文件存档
-        ///// </summary>
-        //public virtual bool IsSingleFile { get { return true; } }
-
-        /// <summary>
         /// 搜集存档缩略信息
         /// </summary>
         public Dictionary<int, Dictionary<string,string>> CollectedSaveInfo = new Dictionary<int, Dictionary<string, string>>();
+
+
+        #region 注册
+
+        /// <summary>
+        /// 注册存储单元
+        /// </summary>
+        protected virtual void RegisterSavingUnit()
+        {
+            m_savingUnitRegEntryDict["Summary"] = new SavingUnitRegEntry() { UnitName = "Summary", UnitType = typeof(SavingUnitSummary), IsOpen = true };
+        }
+
+        /// <summary>
+        /// 注册项
+        /// </summary>
+        public class SavingUnitRegEntry
+        {
+            public string UnitName;
+            public Type UnitType;
+            public bool IsOpen; // 支持可配置的启动条件
+        }
+
+        /// <summary>
+        /// 注册列表
+        /// </summary>
+        protected Dictionary<string, SavingUnitRegEntry> m_savingUnitRegEntryDict = new Dictionary<string, SavingUnitRegEntry>();
+
+        #endregion
+
+        /// <summary>
+        /// 当前存储列表
+        /// </summary>
+        protected List<SavingUnitBase> m_savingUnitList;
     }
 
 }

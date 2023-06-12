@@ -40,11 +40,6 @@ namespace StreamerReborn
         {
             get { return (GameManager.Instance) as MyGameManager; }
         }
-
-        public static GameProcessManager GameProcessManager
-        {
-            get { return ((MyGameManager)GameManager.Instance).ProcessManager; }
-        }
     }
 
 
@@ -58,7 +53,8 @@ namespace StreamerReborn
         {
             base.Tick();
 
-            m_processManager.Tick(Time.deltaTime);
+            // tick
+            m_gameWorld.Tick();
         }
 
 
@@ -68,7 +64,7 @@ namespace StreamerReborn
         /// <returns></returns>
         protected override SavingManagerBase CreateSavingManager()
         {
-            return new SavingManager();
+            return new SavingManagerRB();
         }
 
         /// <summary>
@@ -98,17 +94,17 @@ namespace StreamerReborn
             {
                 return false;
             }
-            
 
-            m_processManager = new GameProcessManager();
+            m_gameWorld = new GameWorldBase();
+            m_gameWorld.Init();
             return true;
         }
 
         /// <summary>
-        /// 场景切换
+        /// 游戏世界管理
         /// </summary>
-        public GameProcessManager ProcessManager { get { return m_processManager; } }
-        protected GameProcessManager m_processManager;
+        public GameWorldBase GameWorld { get { return m_gameWorld; } }
+        protected GameWorldBase m_gameWorld;
 
         #region 游戏进程控制
 
@@ -121,11 +117,12 @@ namespace StreamerReborn
         {
             bool? ret = null;
 
-            yield return ProcessManager.EnterBattleCoroutine(
-                () => {
-                    BattleManager.Instance.BattleStart();
-                }
-            );
+            //yield return ProcessManager.EnterBattleCoroutine(
+            //    () => {
+            //        BattleManager.Instance.BattleStart();
+            //    }
+            //);
+            yield break;
         }
 
         #endregion

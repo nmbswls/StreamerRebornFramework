@@ -3,9 +3,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace My.Framework.Runtime.Scene
+namespace My.Framework.Runtime.UI
 {
-    public class SceneLayerBase : MonoBehaviour
+
+    public enum UILayerType
+    {
+        Invalid,
+        Normal,
+        ThreeD,
+        Scene,
+    }
+
+    public abstract class UILayerBase : MonoBehaviour
     {
         /// <summary>
         /// 初始化
@@ -60,6 +69,11 @@ namespace My.Framework.Runtime.Scene
             OnAttachGameObject(go);
             LayerPrefabRoot = go;
         }
+
+        /// <summary>
+        /// 层类型
+        /// </summary>
+        public abstract UILayerType LayerType { get; }
 
         protected virtual void OnAttachGameObject(GameObject go)
         {
@@ -165,7 +179,7 @@ namespace My.Framework.Runtime.Scene
         /// </summary>
         /// <param name="compareLayer"></param>
         /// <returns></returns>
-        public int ComparePriority(SceneLayerBase compareLayer)
+        public int ComparePriority(UILayerBase compareLayer)
         {
             //相异时，在顶部返回false，否则返回true
             if (IsStayOnTop ^ compareLayer.IsStayOnTop)

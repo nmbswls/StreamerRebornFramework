@@ -39,9 +39,7 @@ namespace My.Framework.Runtime.UI
             EventOnEnter?.Invoke();
         }
 
-
         #endregion
-
 
         protected int m_newSaveIdx = 0;
 
@@ -61,7 +59,6 @@ namespace My.Framework.Runtime.UI
 
         [AutoBind("./ExitButton")]
         public Button m_exitButton;
-
 
         #endregion
     }

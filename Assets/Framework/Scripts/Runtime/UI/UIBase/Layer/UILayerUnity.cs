@@ -3,13 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace My.Framework.Runtime.Scene
+namespace My.Framework.Runtime.UI
 {
     /// <summary>
     /// 包含一个unityscene的layer
     /// </summary>
-    public class SceneLayerUnity : SceneLayer3D
+    public class UILayerUnity : UILayerBase
     {
+        /// <summary>
+        /// 层类型
+        /// </summary>
+        public override UILayerType LayerType { get { return UILayerType.Scene; } }
+
         /// <summary>
         /// 设置scene
         /// </summary>
@@ -61,6 +66,11 @@ namespace My.Framework.Runtime.Scene
         /// 场景根节点列表
         /// </summary>
         public List<UnityEngine.GameObject> UnitySceneRootObjs = new List<GameObject>();
+
+        /// <summary>
+        /// 相机
+        /// </summary>
+        protected Camera m_layerCamera;
     }
 }
 

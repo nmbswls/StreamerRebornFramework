@@ -1,5 +1,4 @@
 using My.Framework.Runtime.Resource;
-using My.Framework.Runtime.Scene;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -415,7 +414,7 @@ namespace My.Framework.Runtime.UI
                 return false;
             foreach (var layer in m_layerArray)
             {
-                if (layer != null && layer.State == SceneLayerBase.LayerState.InStack)
+                if (layer != null && layer.State == UILayerBase.LayerState.InStack)
                 {
                     return true;
                 }
@@ -638,19 +637,25 @@ namespace My.Framework.Runtime.UI
 
             foreach (var layer in m_layerArray)
             {
-                if (layer != null && layer.State == SceneLayerBase.LayerState.InStack)
+                if (layer != null && layer.State == UILayerBase.LayerState.InStack)
                 {
-                    SceneLayerManager.Instance.PopLayer(layer);
-                    var sceneLayer = layer as SceneLayerUnity;
+                    UIManager.Instance.PopLayer(layer);
+                    var sceneLayer = layer as UILayerUnity;
                     if (sceneLayer != null)
                     {
                         HideOrShowUnitySceneLayer(sceneLayer, false);
                     }
                 }
             }
+
         }
 
-        protected static void HideOrShowUnitySceneLayer(SceneLayerUnity layer, bool show)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="layer"></param>
+        /// <param name="show"></param>
+        protected static void HideOrShowUnitySceneLayer(UILayerUnity layer, bool show)
         {
             if (layer == null) return;
 
@@ -710,7 +715,7 @@ namespace My.Framework.Runtime.UI
 
             var toLoadList = new List<LayerDesc>(LayerDescArray);
             // 构造layer句柄容器
-            m_layerArray = new SceneLayerBase[LayerDescArray.Length];
+            m_layerArray = new UILayerBase[LayerDescArray.Length];
             // 如果没有需要加载的layer了
             if (toLoadList.Count == 0)
             {
@@ -726,14 +731,14 @@ namespace My.Framework.Runtime.UI
                 var layerDesc = toLoadList[i];
                 string layerName = layerDesc.m_layerName;
                 string layerResPath = layerDesc.m_layerResPath;
-                bool isUILayer = layerDesc.m_isUILayer;
+                var layerType = layerDesc.m_layerType;
                 // 闭包赋值
                 int index = i;
-                if (isUILayer)
+                if (layerType == UILayerType.Normal)
                 {
                     m_currPipelineCtx.m_layerLoadedInPipe = true;
 
-                    SceneLayerManager.Instance.CreateLayer(typeof(SceneLayerUI), layerName, layerResPath,
+                    UIManager.Instance.CreateLayer(typeof(UILayerNormal), layerName, layerResPath,
                         (layer) =>
                         {
                         // 加载失败
@@ -753,7 +758,7 @@ namespace My.Framework.Runtime.UI
                 }
                 else if (layerResPath.EndsWith(".unity"))
                 {
-                    SceneLayerManager.Instance.CreateLayer(typeof(SceneLayerUnity), layerName, layerResPath,
+                    UIManager.Instance.CreateLayer(typeof(UILayerUnity), layerName, layerResPath,
                         (layer) =>
                         {
                             // 加载失败
@@ -776,7 +781,7 @@ namespace My.Framework.Runtime.UI
                 {
                     m_currPipelineCtx.m_layerLoadedInPipe = true;
 
-                    SceneLayerManager.Instance.CreateLayer(typeof(SceneLayer3D), layerName, layerResPath,
+                    UIManager.Instance.CreateLayer(typeof(UILayer3D), layerName, layerResPath,
                         (layer) =>
                         {
                         // 加载失败
@@ -979,19 +984,19 @@ namespace My.Framework.Runtime.UI
             // 如果不这么做 有问题吗？
             foreach (var layer in m_layerArray)
             {
-                var sceneLayer = layer as SceneLayerUnity;
-                if (sceneLayer != null && sceneLayer.State != SceneLayerBase.LayerState.InStack)
+                var sceneLayer = layer as UILayerUnity;
+                if (sceneLayer != null && sceneLayer.State != UILayerBase.LayerState.InStack)
                 {
-                    SceneLayerManager.Instance.PushLayer(sceneLayer);
+                    UIManager.Instance.PushLayer(sceneLayer);
                     HideOrShowUnitySceneLayer(sceneLayer, true);
                     UnityEngine.SceneManagement.SceneManager.SetActiveScene(sceneLayer.Scene);
                 }
             }
 
             // 将mainlayer压栈显示
-            if (MainLayer.State != SceneLayerBase.LayerState.InStack)
+            if (MainLayer.State != UILayerBase.LayerState.InStack)
             {
-                SceneLayerManager.Instance.PushLayer(MainLayer);
+                UIManager.Instance.PushLayer(MainLayer);
             }
         }
 
@@ -1035,7 +1040,7 @@ namespace My.Framework.Runtime.UI
                 // 按照desc中的layer名称获取layer
                 var desc = UIComponentDescArray[i];
                 var layerDesc = GetLayerDescByName(desc.m_attachLayerName);
-                SceneLayerBase layer = GetLayerByName(desc.m_attachLayerName);
+                UILayerBase layer = GetLayerByName(desc.m_attachLayerName);
 
                 // 当没有找到对应的layer
                 if (layer == null)
@@ -1046,7 +1051,7 @@ namespace My.Framework.Runtime.UI
 
                 // 将ctrl attach到 layer
                 UIComponentBase comp = null; // 绑定component 可以直接拖动 也可以代码中添加
-                var sceneLayer = layer as SceneLayerUnity;
+                var sceneLayer = layer as UILayerUnity;
                 if (sceneLayer != null && layer.LayerPrefabRoot == null)
                 {
                     foreach (var go in sceneLayer.UnitySceneRootObjs)
@@ -1172,7 +1177,7 @@ namespace My.Framework.Runtime.UI
         public virtual void InitlizeBeforeManagerStartIt()
         {
             // 构造层容器
-            m_layerArray = new SceneLayerBase[LayerDescArray.Length];
+            m_layerArray = new UILayerBase[LayerDescArray.Length];
         }
 
         /// <summary>
@@ -1187,7 +1192,7 @@ namespace My.Framework.Runtime.UI
                 {
                     if (layer != null)
                     {
-                        SceneLayerManager.Instance.FreeLayer(layer);
+                        UIManager.Instance.FreeLayer(layer);
                     }
                 }
             }
@@ -1219,7 +1224,7 @@ namespace My.Framework.Runtime.UI
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        protected SceneLayerBase GetLayerByName(string name)
+        protected UILayerBase GetLayerByName(string name)
         {
             foreach (var layer in m_layerArray)
             {
@@ -1235,7 +1240,7 @@ namespace My.Framework.Runtime.UI
         {
             public string m_layerName;
             public string m_layerResPath;
-            public bool m_isUILayer = true;
+            public UILayerType m_layerType = UILayerType.Normal;
         }
         protected virtual LayerDesc[] LayerDescArray
         {
@@ -1245,12 +1250,21 @@ namespace My.Framework.Runtime.UI
         /// <summary>
         /// 主layer的句柄，对于大多数task只有一个layer
         /// </summary>
-        protected virtual SceneLayerBase MainLayer { get { return (m_layerArray == null || m_layerArray.Length == 0) ? null : m_layerArray[0]; } }
+        protected virtual UILayerBase MainLayer { get { return (m_layerArray == null || m_layerArray.Length == 0) ? null : m_layerArray[0]; } }
+
+        /// <summary>
+        /// 获取层列表
+        /// </summary>
+        /// <returns></returns>
+        public UILayerBase[] GetLayerArray()
+        {
+            return m_layerArray;
+        }
 
         /// <summary>
         /// layer的句柄数组,第一个是主layer
         /// </summary>
-        protected SceneLayerBase[] m_layerArray;
+        protected UILayerBase[] m_layerArray;
 
         public class UIComponentDesc
         {
@@ -1268,6 +1282,12 @@ namespace My.Framework.Runtime.UI
         /// uictrl的句柄数组
         /// </summary>
         protected UIComponentBase[] m_uiCompArray;
+
+        #endregion
+
+        #region 事件
+
+        
 
         #endregion
 

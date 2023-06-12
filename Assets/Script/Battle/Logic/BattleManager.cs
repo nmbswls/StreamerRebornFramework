@@ -12,16 +12,17 @@ namespace StreamerReborn
         {
             get
             {
-                if(GameStatic.GameProcessManager == null)
+                if(GameStatic.MyGameManager == null)
                 {
                     return null;
                 }
-                var process = GameStatic.GameProcessManager.GetBattleProcess();
-                if(process == null)
-                {
-                    return null;
-                }
-                return process.MainBattle;
+                //var process = GameStatic.GameProcessManager.GetBattleProcess();
+                //if(process == null)
+                //{
+                //    return null;
+                //}
+                //return process.MainBattle;
+                return null;
             }
         }
 
@@ -52,23 +53,23 @@ namespace StreamerReborn
         /// </summary>
         public void BattleStart()
         {
-            var battleProcess = GameStatic.GameProcessManager.GetBattleProcess();
+            //var battleProcess = GameStatic.GameProcessManager.GetBattleProcess();
 
 
-            AudienceManager.CreateBattleAudience(1, 0);
-            AudienceManager.CreateBattleAudience(1, 0);
-            {
-                var info = new CardInstanceInfo();
-                info.InstanceId = 0;
-                info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(100);
-                AddCardFromDeck(info);
-            }
-            {
-                var info = new CardInstanceInfo();
-                info.InstanceId = 1;
-                info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(104);
-                AddCardFromDeck(info);
-            }
+            //AudienceManager.CreateBattleAudience(1, 0);
+            //AudienceManager.CreateBattleAudience(1, 0);
+            //{
+            //    var info = new CardInstanceInfo();
+            //    info.InstanceId = 0;
+            //    info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(100);
+            //    AddCardFromDeck(info);
+            //}
+            //{
+            //    var info = new CardInstanceInfo();
+            //    info.InstanceId = 1;
+            //    info.Config = GameStatic.ConfigDataLoader.GetConfigDataCardBattleInfo(104);
+            //    AddCardFromDeck(info);
+            //}
 
         }
 

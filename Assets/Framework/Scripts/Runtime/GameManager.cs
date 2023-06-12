@@ -3,7 +3,6 @@ using My.Framework.Runtime;
 using My.Framework.Runtime.Config;
 using My.Framework.Runtime.Resource;
 using My.Framework.Runtime.Saving;
-using My.Framework.Runtime.Scene;
 using My.Framework.Runtime.UI;
 using System;
 using System.Collections;
@@ -80,14 +79,6 @@ namespace My.Framework.Runtime
                 return false;
             }
 
-            // 初始化SceneManager
-            m_sceneLayerManager = SceneLayerManager.CreateSceneManager();
-            if (!m_sceneLayerManager.Initialize())
-            {
-                Debug.LogError("GameManager.Initlize fail for m_sceneLayerManager.Initlize()");
-                return false;
-            }
-
             // 初始化UIManager
             m_uiManager = UIManager.CreateUIManager();
             if (!m_uiManager.Initialize())
@@ -117,10 +108,8 @@ namespace My.Framework.Runtime
             m_corutineWrapper.Tick();
 
             m_resourceManager.Tick();
-            m_sceneLayerManager.Tick();
             m_uiManager.Tick(Time.deltaTime);
-
-
+            m_savingManager.Tick();
         }
 
         /// <summary>
@@ -132,14 +121,12 @@ namespace My.Framework.Runtime
             m_corutineWrapper.StartCoroutine(corutine);
         }
 
-
         protected void InitLocalizationInfo()
         {
             m_currLocalization = "CN";
             PlayerPrefs.SetString("Localization", m_currLocalization);
             PlayerPrefs.Save();
         }
-
 
         #region 装配组件
         /// <summary>
@@ -171,9 +158,6 @@ namespace My.Framework.Runtime
 
         #endregion
 
-
-
-
         /// <summary>
         /// Exception Debug提示
         /// </summary>
@@ -198,12 +182,6 @@ namespace My.Framework.Runtime
         /// </summary>
         public ConfigDataLoaderBase ConfigDataLoader { get { return m_configDataLoader; } }
         protected ConfigDataLoaderBase m_configDataLoader;
-
-        /// <summary>
-        /// 场景管理器
-        /// </summary>
-        public SceneLayerManager SceneLayerManager { get { return m_sceneLayerManager; } }
-        protected SceneLayerManager m_sceneLayerManager;
 
         /// <summary>
         /// UI管理器

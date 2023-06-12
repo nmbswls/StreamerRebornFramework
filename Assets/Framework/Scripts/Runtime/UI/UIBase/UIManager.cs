@@ -5,19 +5,23 @@ using UnityEngine;
 
 namespace My.Framework.Runtime.UI
 {
-
+    /// <summary>
+    /// 简单ui管理器
+    /// </summary>
     public partial class UIManager
     {
-        private UIManager() { }
-
         /// <summary>
         /// 初始化
         /// </summary>
         /// <returns></returns>
-        public bool Initialize()
+        public virtual bool Initialize()
         {
+            InitializeLayer();
             return true;
         }
+
+        #region 对外方法
+
         /// <summary>
         /// 返回intent栈上的一个
         /// </summary>
@@ -92,7 +96,9 @@ namespace My.Framework.Runtime.UI
             return targetTask;
         }
 
-        #region 代码
+        #endregion
+
+        #region 单例相关
 
         public static UIManager CreateUIManager()
         {
@@ -102,6 +108,7 @@ namespace My.Framework.Runtime.UI
             }
             return m_instance;
         }
+        private UIManager() { }
         /// <summary>
         /// 单例访问器
         /// </summary>
@@ -124,8 +131,55 @@ namespace My.Framework.Runtime.UI
                 }
             }
             m_ctrlList4TickLoop.Clear();
+
+            m_corutineHelper.Tick();
+            TickLayerStack();
         }
 
+        #region 内部方法
+
+        /// <summary>
+        /// 获取或创建已经存在的
+        /// </summary>
+        /// <param name="uiName"></param>
+        /// <returns></returns>
+        private UIControllerBase GetOrCreateUIController(string uiName)
+        {
+            UIControllerBase retController;
+            // 查看task是否已经存在
+            if (m_uiControllerDict.TryGetValue(uiName, out retController))
+                return retController;
+
+            if (!m_uiControllerRegDict.TryGetValue(uiName, out var item))
+            {
+                Debug.LogError($"GetOrCreateUIController fail {uiName} not registed");
+                return null;
+            }
+
+            Type type = Type.GetType(item.m_ctrlTypeName);
+            if (type == null)
+            {
+                Debug.LogError($"GetOrCreateUIController fail {uiName} not registed");
+                return null;
+            }
+            // 如果不存在创建新的task
+            retController = Activator.CreateInstance(type, uiName) as UIControllerBase;
+
+            // 进行必要的初始化
+            retController.InitlizeBeforeManagerStartIt();
+            // 注册到ui字典
+            m_uiControllerDict[uiName] = retController;
+
+            return retController;
+        }
+
+        /// <summary>
+        /// 内部启动一个ui controller
+        /// </summary>
+        /// <param name="ctrl"></param>
+        /// <param name="intent"></param>
+        /// <param name="pushIntentToStack"></param>
+        /// <returns></returns>
         private bool StartUIControllerInternal(UIControllerBase ctrl, UIIntent intent, bool pushIntentToStack)
         {
             // 首先关闭所有存在冲突的ui
@@ -147,6 +201,10 @@ namespace My.Framework.Runtime.UI
             return true;
         }
 
+        /// <summary>
+        /// 关闭所有冲突的ui组
+        /// </summary>
+        /// <param name="uiName"></param>
         private void CloseAllConflictUI(string uiName)
         {
             if (!m_uiControllerRegDict.TryGetValue(uiName, out var srcTaskItem))
@@ -193,34 +251,7 @@ namespace My.Framework.Runtime.UI
             }
         }
 
-        private UIControllerBase GetOrCreateUIController(string uiName)
-        {
-            UIControllerBase retController;
-            // 查看task是否已经存在
-            if (m_uiControllerDict.TryGetValue(uiName, out retController))
-                return retController;
-
-            if (!m_uiControllerRegDict.TryGetValue(uiName, out var item))
-            {
-                Debug.LogError($"GetOrCreateUIController fail {uiName} not registed");
-                return null;
-            }
-
-            Type type = Type.GetType(item.m_ctrlTypeName);
-            if (type == null)
-            {
-                Debug.LogError($"GetOrCreateUIController fail {uiName} not registed");
-                return null;
-            }
-            // 如果不存在创建新的task
-            retController = Activator.CreateInstance(type, uiName) as UIControllerBase;
-
-            // 进行必要的初始化
-            retController.InitlizeBeforeManagerStartIt();
-            // 注册到task字典
-            m_uiControllerDict[uiName] = retController;
-            return retController;
-        }
+        #endregion
 
         private bool StartOrResumeControllerUI(UIControllerBase uiCtrl, UIIntent intent)
         {
@@ -239,8 +270,6 @@ namespace My.Framework.Runtime.UI
                     return false;
             }
         }
-
-
 
         /// <summary>
         /// 将intent栈数据pop到指定intent为止
@@ -282,47 +311,23 @@ namespace My.Framework.Runtime.UI
             }
         }
 
-        /// <summary>
-        /// 注册ui
-        /// </summary>
-        public void RegisterUIController(string uiName, string ctrlTypeName, int uiGroup)
-        {
-            if (!m_uiControllerRegDict.TryGetValue(uiName, out var item))
-            {
-                item = new UIRegItem();
-                m_uiControllerRegDict.Add(uiName, item);
-            }
 
-            item.m_ctrlTypeName = ctrlTypeName;
-            item.m_uiGroup = uiGroup;
-        }
+        #region 内部变量
 
         /// <summary>
-        /// 需要停止的ui的列表
+        /// corutine管理
         /// </summary>
-        private List<UIControllerBase> m_uiList4Stop = new List<UIControllerBase>();
+        private SimpleCoroutineWrapper m_corutineHelper = new SimpleCoroutineWrapper();
 
         /// <summary>
         /// 冲突信息
         /// </summary>
         private List<List<int>> m_uiGroupConflictList = new List<List<int>>();
-        /// <summary>
-        /// ui注册条目
-        /// </summary>
-        private class UIRegItem
-        {
-            public string m_ctrlTypeName;
-            public int m_uiGroup;
 
-            /// <summary>
-            /// 类的标签列表
-            /// </summary>
-            public List<string> m_tagList = new List<string>();
-        }
         /// <summary>
-        /// ui注册信息
+        /// 需要停止的ui的列表
         /// </summary>
-        private Dictionary<string, UIRegItem> m_uiControllerRegDict = new Dictionary<string, UIRegItem>();
+        private List<UIControllerBase> m_uiList4Stop = new List<UIControllerBase>();
 
         /// <summary>
         /// uiController 字典
@@ -334,5 +339,7 @@ namespace My.Framework.Runtime.UI
         /// Intent栈
         /// </summary>
         private List<UIIntent> m_uiIntentStack = new List<UIIntent>();
+
+        #endregion
     }
 }

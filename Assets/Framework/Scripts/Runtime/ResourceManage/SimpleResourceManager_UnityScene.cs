@@ -15,6 +15,21 @@ namespace My.Framework.Runtime.Resource
     public partial class SimpleResourceManager
     {
         /// <summary>
+        /// 启动加载unityscene的协程
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="onCompleted"></param>
+        /// <param name="noErrlog"></param>
+        /// <param name="loadAync"></param>
+        /// <param name="bAdditive"></param>
+        public void StartLoadSceneCorutine(string path, Action<string, UnityEngine.SceneManagement.Scene?> onCompleted,
+            bool noErrlog = false, bool loadAync = false, bool bAdditive = true)
+        {
+            m_corutineHelper.StartCoroutine(LoadUnityScene(path, onCompleted));
+        }
+
+
+        /// <summary>
         /// 启动unityScene加载
         /// </summary>
         public IEnumerator LoadUnityScene(string path, Action<string, UnityEngine.SceneManagement.Scene?> onCompleted,

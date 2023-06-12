@@ -2,10 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace My.Framework.Runtime.Scene
+namespace My.Framework.Runtime.UI
 {
-    public class SceneLayerUI : SceneLayerBase
+    /// <summary>
+    /// 普通ugui为基础的ui
+    /// </summary>
+    public class UILayerNormal : UILayerBase
     {
+        /// <summary>
+        /// 层类型
+        /// </summary>
+        public override UILayerType LayerType { get { return UILayerType.Normal; } }
+
         protected override void OnInit()
         {
             m_layerCanvas = GetComponent<Canvas>();

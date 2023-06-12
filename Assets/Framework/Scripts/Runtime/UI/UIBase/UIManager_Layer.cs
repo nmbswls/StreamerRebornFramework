@@ -6,40 +6,18 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace My.Framework.Runtime.Scene
+namespace My.Framework.Runtime.UI
 {
-    public class SceneLayerManager
+    /// <summary>
+    /// UI 管理器 管理层级
+    /// </summary>
+    public partial class UIManager
     {
-
-        #region 单例相关
-
-        private SceneLayerManager() { }
-
-
-        public static SceneLayerManager CreateSceneManager()
-        {
-            if (m_instance == null)
-            {
-                m_instance = new SceneLayerManager();
-            }
-            return m_instance;
-        }
-
         /// <summary>
-        /// 单例访问器
+        /// 更新层级信息
         /// </summary>
-        public static SceneLayerManager Instance { get { return m_instance; } }
-        private static SceneLayerManager m_instance;
-
-        /// <summary>
-        /// corutine管理
-        /// </summary>
-        private SimpleCoroutineWrapper m_corutineHelper = new SimpleCoroutineWrapper();
-        #endregion
-
-        public void Tick()
+        public void TickLayerStack()
         {
-            m_corutineHelper.Tick();
             UpdateLayerStack();
             if (m_isSortingOrderModifierDirty)
             {
@@ -48,7 +26,11 @@ namespace My.Framework.Runtime.Scene
             }
         }
 
-        public bool Initialize()
+        /// <summary>
+        /// 初始化层级
+        /// </summary>
+        /// <returns></returns>
+        public bool InitializeLayer()
         {
             // 创建sceneRoot
             if (!CreateSceneRoot())
@@ -59,6 +41,228 @@ namespace My.Framework.Runtime.Scene
             return true;
         }
 
+        #region 对外方法
+
+        /// <summary>
+        /// 创建一个层
+        /// </summary>
+        /// <param name="layerType"></param>
+        /// <param name="name"></param>
+        /// <param name="resPath"></param>
+        /// <param name="onComplete"></param>
+        public void CreateLayer(Type layerType, string name, string resPath, Action<UILayerBase> onComplete)
+        {
+            // 必须要有名字
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new Exception("CreateLayer need a name");
+            }
+
+            // 如果是保留layer，直接返回缓存
+            var oldLayer = FindLayerByName(name);
+            if (oldLayer != null)
+            {
+                if (oldLayer.IsReserve() && oldLayer.State == UILayerBase.LayerState.Unused)
+                {
+                    onComplete(oldLayer);
+                }
+                else
+                {
+                    Debug.LogError(
+                        $"CreateLayer oldLayer state error. LayerName:{name},LayerType:{layerType},respath:{resPath},IsReserve:{oldLayer.IsReserve()},LayerState:{oldLayer.State}");
+                    onComplete(null);
+                }
+                return;
+            }
+
+            // 名字不能冲突
+            if (m_layerDict.ContainsKey(name))
+            {
+                throw new Exception(string.Format("CreateLayer name conflict {0}", name));
+            }
+
+            if (layerType == typeof(UILayerNormal))
+            {
+                CreateSceneLayerUI(name, resPath, onComplete);
+            }
+            else if (layerType == typeof(UILayer3D))
+            {
+                CreateSceneLayer3D(name, resPath, onComplete);
+            }
+            else if (layerType == typeof(UILayerUnity))
+            {
+                CreateSceneLayerUnity(name, resPath, onComplete);
+            }
+        }
+
+        /// <summary>
+        /// 释放层
+        /// </summary>
+        /// <param name="layer"></param>
+        public void FreeLayer(UILayerBase layer)
+        {
+            if (layer == null)
+            {
+                return;
+            }
+            // 当layer处于loading过程中，需要等loading完成
+            if (layer.State == UILayerBase.LayerState.Loading)
+            {
+                layer.State = UILayerBase.LayerState.WaitForFree;
+                return;
+            }
+
+            // 当layer在栈中，需要先弹栈
+            if (layer.State == UILayerBase.LayerState.InStack)
+            {
+                PopLayer(layer);
+
+                // 保留layer不用真正销毁
+                if (layer.IsReserve())
+                {
+                    return;
+                }
+            }
+
+            // 将layer从数据结构移除
+            layer.UnInit();
+            m_layerDict.Remove(layer.LayerName);
+            m_unusedLayerList.Remove(layer);
+            m_loadingLayerList.Remove(layer);
+
+            // 销毁layer对象
+            if (layer.GetType() != typeof(UILayerUnity))
+            {
+                GameObject.Destroy(layer.gameObject);
+            }
+            else
+            {
+                // scene layer 的销毁
+                var sceneLayer = layer as UILayerUnity;
+                System.Diagnostics.Debug.Assert(sceneLayer != null, "sceneLayer != null");
+                GameObject.Destroy(sceneLayer.gameObject);
+                UnityEngine.SceneManagement.SceneManager.UnloadSceneAsync(sceneLayer.Scene);
+            }
+        }
+
+        /// <summary>
+        /// 将layer压栈
+        /// </summary>
+        /// <param name="layer"></param>
+        public bool PushLayer(UILayerBase layer)
+        {
+            // 首先只有Unused状态才能压栈
+            if (layer.State != UILayerBase.LayerState.Unused)
+            {
+                Debug.LogError(string.Format("PushLayer in wrong state layer={0} state={1}", layer.name, layer.State));
+                return false;
+            }
+
+            // 将layer移动到栈数据结构
+            m_unusedLayerList.Remove(layer);
+            m_layerStack.Add(layer);
+
+
+            // 设置状态
+            layer.State = UILayerBase.LayerState.InStack;
+
+            // 设置默认的go root, 随后还是需要 UpdateLayerStack 进行详细计算
+            if (layer.GetType() == typeof(UILayer3D))
+            {
+                layer.transform.SetParent(m_3DSceneRootGo.transform, false);
+            }
+            else if (layer.GetType() == typeof(UILayerUnity))
+            {
+                // do nothing
+            }
+
+            if (layer.GetType() != typeof(UILayerUnity))
+            {
+                layer.gameObject.SetActive(true);
+            }
+
+            // 设置脏标记，将会导致UpdateLayerStack
+            m_stackDirty = true;
+
+            return true;
+        }
+
+        /// <summary>
+        /// 将layer弹栈
+        /// </summary>
+        /// <param name="layer"></param>
+        public void PopLayer(UILayerBase layer)
+        {
+            // 只有InStack状态之下才能PopLayer
+            if (layer.State != UILayerBase.LayerState.InStack)
+            {
+                Debug.LogError(string.Format("PopLayer in wrong state layer={0} state={1}", layer.name, layer.State));
+                return;
+            }
+
+            // 隐藏layer
+            if (layer.GetType() != typeof(UILayerUnity))
+            {
+                layer.gameObject.SetActive(false);
+            }
+
+            // 将layer移动到栈数据结构
+            m_layerStack.Remove(layer);
+            m_unusedLayerList.Add(layer);
+
+            if (layer.GetType() != typeof(UILayerUnity))
+            {
+                layer.gameObject.transform.SetParent(m_unusedLayerRootGo.transform, false);
+            }
+
+            // 设置状态
+            layer.State = UILayerBase.LayerState.Unused;
+
+            m_stackDirty = true;
+        }
+
+        /// <summary>
+        /// 找到指定的layer
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public UILayerBase FindLayerByName(string name)
+        {
+            m_layerDict.TryGetValue(name, out var ret);
+            return ret;
+        }
+
+        /// <summary>
+        /// 通过gameobject 获取其所属layer对象
+        /// </summary>
+        /// <param name="go"></param>
+        /// <returns></returns>
+        public UILayerBase GetSceneLayer(GameObject go)
+        {
+            int count = m_layerStack.Count;
+            for (int i = 0; i < count; ++i)
+            {
+                if (go.transform.IsChildOf(m_layerStack[i].transform))
+                {
+                    return m_layerStack[i];
+                }
+
+                if (go.transform == m_layerStack[i].transform)
+                {
+                    return m_layerStack[i];
+                }
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region 代码生成结构
+
+        /// <summary>
+        /// 创建ui依赖的根节点结构
+        /// </summary>
+        /// <returns></returns>
         private bool CreateSceneRoot()
         {
             Debug.Log("SceneManager.CreateSceneRoot start");
@@ -120,7 +324,7 @@ namespace My.Framework.Runtime.Scene
             layerGo.AddComponent<GraphicRaycaster>();
             layerGo.AddComponent<CanvasGroup>();
 
-            layerGo.AddComponent<SceneLayerUI>();
+            layerGo.AddComponent<UILayerNormal>();
 
             return layerGo;
         }
@@ -134,7 +338,7 @@ namespace My.Framework.Runtime.Scene
             GameObject layerGo = new GameObject();
             layerGo.name = "3DLayerRoot";
 
-            layerGo.AddComponent<SceneLayer3D>();
+            layerGo.AddComponent<UILayer3D>();
             return layerGo;
         }
 
@@ -161,57 +365,9 @@ namespace My.Framework.Runtime.Scene
             return cameraGo;
         }
 
-        /// <summary>
-        /// 创建一个层
-        /// </summary>
-        /// <param name="layerType"></param>
-        /// <param name="name"></param>
-        /// <param name="resPath"></param>
-        /// <param name="onComplete"></param>
-        public void CreateLayer(Type layerType, string name, string resPath, Action<SceneLayerBase> onComplete)
-        {
-            // 必须要有名字
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new Exception("CreateLayer need a name");
-            }
+        #endregion
 
-            // 如果是保留layer，直接返回缓存
-            var oldLayer = FindLayerByName(name);
-            if (oldLayer != null)
-            {
-                if (oldLayer.IsReserve() && oldLayer.State == SceneLayerBase.LayerState.Unused)
-                {
-                    onComplete(oldLayer);
-                }
-                else
-                {
-                    Debug.LogError(
-                        $"CreateLayer oldLayer state error. LayerName:{name},LayerType:{layerType},respath:{resPath},IsReserve:{oldLayer.IsReserve()},LayerState:{oldLayer.State}");
-                    onComplete(null);
-                }
-                return;
-            }
-
-            // 名字不能冲突
-            if (m_layerDict.ContainsKey(name))
-            {
-                throw new Exception(string.Format("CreateLayer name conflict {0}", name));
-            }
-
-            if (layerType == typeof(SceneLayerUI))
-            {
-                CreateSceneLayerUI(name, resPath, onComplete);
-            }
-            else if (layerType == typeof(SceneLayer3D))
-            {
-                CreateSceneLayer3D(name, resPath, onComplete);
-            }
-            else if (layerType == typeof(SceneLayerUnity))
-            {
-                CreateSceneLayerUnity(name, resPath, onComplete);
-            }
-        }
+        #region 生成层函数
 
         /// <summary>
         /// 创建一个uilayer
@@ -220,7 +376,7 @@ namespace My.Framework.Runtime.Scene
         /// <param name="resPath"></param>
         /// <param name="onComplete"></param>
         /// <param name="enableReserve"></param>
-        private void CreateSceneLayerUI(string layerName, string resPath, Action<SceneLayerBase> onComplete)
+        private void CreateSceneLayerUI(string layerName, string resPath, Action<UILayerBase> onComplete)
         {
             // 从prefab克隆layerroot
             var layerRootGo = CreateUILayerRoot();
@@ -229,7 +385,7 @@ namespace My.Framework.Runtime.Scene
             layerRootGo.name = layerName + "_LayerRoot";
 
             // 获取layer组件
-            var layer = layerRootGo.GetComponent<SceneLayerUI>();
+            var layer = layerRootGo.GetComponent<UILayerNormal>();
             layer.Init();
             //layer.LayerCanvas.worldCamera = m_defaultUiCamera;
             layer.SetName(layerName);
@@ -252,7 +408,7 @@ namespace My.Framework.Runtime.Scene
             var iter = SimpleResourceManager.Instance.LoadAsset<GameObject>(resPath, (lpath, lasset) =>
             {
                 // 当layer已经释放
-                if (layer.State == SceneLayerBase.LayerState.WaitForFree)
+                if (layer.State == UILayerBase.LayerState.WaitForFree)
                 {
                     FreeLayer(layer);
                     return;
@@ -271,18 +427,18 @@ namespace My.Framework.Runtime.Scene
         /// <param name="resPath"></param>
         /// <param name="onComplete"></param>
         /// <param name="enableReserve">是否允许被留用</param>
-        private void CreateSceneLayer3D(string layerName, string resPath, Action<SceneLayerBase> onComplete, bool enableReserve = false)
+        private void CreateSceneLayer3D(string layerName, string resPath, Action<UILayerBase> onComplete, bool enableReserve = false)
         {
             // 从prefab克隆layerroot
             var layerRootGo = Create3DLayerRoot();
             if (layerRootGo == null)
             {
-                Debug.LogError(string.Format("CreateUILayer fail to clone m_3DLayerRootPrefab name={0}", layerName));
+                Debug.LogError(string.Format("CreateUILayer fail to CreateSceneLayer3D name={0}", layerName));
                 return;
             }
 
             // 获取layer组件
-            var layer = layerRootGo.GetComponent<SceneLayer3D>();
+            var layer = layerRootGo.GetComponent<UILayer3D>();
             layer.Init();
             layer.SetName(layerName);
 
@@ -295,7 +451,7 @@ namespace My.Framework.Runtime.Scene
             var iter = SimpleResourceManager.Instance.LoadAsset<GameObject>(resFullPath, (lpath, lasset) =>
             {
                 // 当layer已经释放
-                if (layer.State == SceneLayerBase.LayerState.WaitForFree)
+                if (layer.State == UILayerBase.LayerState.WaitForFree)
                 {
                     FreeLayer(layer);
                     return;
@@ -313,7 +469,7 @@ namespace My.Framework.Runtime.Scene
         /// <param name="name"></param>
         /// <param name="resPath"></param>
         /// <param name="onComplete"></param>
-        private void CreateSceneLayerUnity(string name, string resPath, Action<SceneLayerBase> onComplete)
+        private void CreateSceneLayerUnity(string name, string resPath, Action<UILayerBase> onComplete)
         {
             // 启动资源加载
             UnityEngine.SceneManagement.Scene? scene;
@@ -338,7 +494,7 @@ namespace My.Framework.Runtime.Scene
                 // 获取layer组件
                 GameObject layerObj = new GameObject(name);
                 GameObject.DontDestroyOnLoad(layerObj);
-                var layer = layerObj.AddComponent<SceneLayerUnity>();
+                var layer = layerObj.AddComponent<UILayerUnity>();
                 layer.Init();
                 layer.SetName(name);
                 layer.SetScene(scene.Value);
@@ -356,7 +512,7 @@ namespace My.Framework.Runtime.Scene
                 m_layerDict.Add(name, layer);
 
                 // 将layer加入到未使用列表
-                layer.State = SceneLayerBase.LayerState.Unused;
+                layer.State = UILayerBase.LayerState.Unused;
                 m_unusedLayerList.Add(layer);
 
                 // 资源加载完成,自动push，unityscenelayer，不会有不在栈中的情况
@@ -369,182 +525,18 @@ namespace My.Framework.Runtime.Scene
             m_corutineHelper.StartCoroutine(iter);
         }
 
-        /// <summary>
-        /// 释放层
-        /// </summary>
-        /// <param name="layer"></param>
-        public void FreeLayer(SceneLayerBase layer)
-        {
-            if (layer == null)
-            {
-                return;
-            }
-            // 当layer处于loading过程中，需要等loading完成
-            if (layer.State == SceneLayerBase.LayerState.Loading)
-            {
-                layer.State = SceneLayerBase.LayerState.WaitForFree;
-                return;
-            }
+        #endregion
 
-            // 当layer在栈中，需要先弹栈
-            if (layer.State == SceneLayerBase.LayerState.InStack)
-            {
-                PopLayer(layer);
-
-                // 保留layer不用真正销毁
-                if (layer.IsReserve())
-                {
-                    return;
-                }
-            }
-
-            // 将layer从数据结构移除
-            layer.UnInit();
-            m_layerDict.Remove(layer.LayerName);
-            m_unusedLayerList.Remove(layer);
-            m_loadingLayerList.Remove(layer);
-
-            GameObject.Destroy(layer.gameObject);
-        }
-
-        /// <summary>
-        /// 将layer压栈
-        /// </summary>
-        /// <param name="layer"></param>
-        public bool PushLayer(SceneLayerBase layer)
-        {
-            // 首先只有Unused状态才能压栈
-            if (layer.State != SceneLayerBase.LayerState.Unused)
-            {
-                Debug.LogError(string.Format("PushLayer in wrong state layer={0} state={1}", layer.name, layer.State));
-                return false;
-            }
-
-            // 将layer移动到栈数据结构
-            m_unusedLayerList.Remove(layer);
-            m_layerStack.Add(layer);
-
-
-            // 设置状态
-            layer.State = SceneLayerBase.LayerState.InStack;
-
-            // 设置默认的go root, 随后还是需要 UpdateLayerStack 进行详细计算
-            if (layer.GetType() == typeof(SceneLayer3D))
-            {
-                layer.transform.SetParent(m_3DSceneRootGo.transform, false);
-            }
-            else if (layer.GetType() == typeof(SceneLayerUnity))
-            {
-                // do nothing
-            }
-
-            if (layer.GetType() != typeof(SceneLayerUnity))
-            {
-                layer.gameObject.SetActive(true);
-            }
-
-            // 设置脏标记，将会导致UpdateLayerStack
-            m_stackDirty = true;
-
-            return true;
-        }
-
-        /// <summary>
-        /// 将layer弹栈
-        /// </summary>
-        /// <param name="layer"></param>
-        public void PopLayer(SceneLayerBase layer)
-        {
-            // 只有InStack状态之下才能PopLayer
-            if (layer.State != SceneLayerBase.LayerState.InStack)
-            {
-                Debug.LogError(string.Format("PopLayer in wrong state layer={0} state={1}", layer.name, layer.State));
-                return;
-            }
-
-            // 隐藏layer
-            if (layer.GetType() != typeof(SceneLayerUnity))
-            {
-                layer.gameObject.SetActive(false);
-            }
-
-            // 将layer移动到栈数据结构
-            m_layerStack.Remove(layer);
-            m_unusedLayerList.Add(layer);
-
-            if (layer.GetType() != typeof(SceneLayerUnity))
-            {
-                layer.gameObject.transform.SetParent(m_unusedLayerRootGo.transform, false);
-            }
-
-            // 设置状态
-            layer.State = SceneLayerBase.LayerState.Unused;
-
-            m_stackDirty = true;
-        }
-
-        /// <summary>
-        /// 将layer挂到加载列表
-        /// </summary>
-        /// <param name="layer"></param>
-        private void AddLayerToLoading(SceneLayerBase layer)
-        {
-            if (layer.GetType() == typeof(SceneLayerUnity))
-            {
-                return;
-            }
-            // 将对象挂到loadingLayerRoot之下
-            layer.gameObject.transform.SetParent(m_loadingLayerRootGo.transform, false);
-            layer.gameObject.transform.localPosition = Vector3.zero;
-            layer.gameObject.transform.localScale = Vector3.one;
-            layer.gameObject.transform.localRotation = Quaternion.identity;
-            // 设置显示状态为不显示
-            layer.gameObject.SetActive(false);
-
-            // 将layer加入到加载中列表
-            m_loadingLayerList.Add(layer);
-
-            // 设置状态
-            layer.State = SceneLayerBase.LayerState.Loading;
-        }
-
-        /// <summary>
-        /// 将layer挂到未使用列表
-        /// </summary>
-        /// <param name="layer"></param>
-        private void AddLayerToUnused(SceneLayerBase layer)
-        {
-            if (layer.GetType() == typeof(SceneLayerUnity))
-            {
-                return;
-            }
-
-            m_loadingLayerList.Remove(layer);
-            m_layerStack.Remove(layer);
-
-            // 将对象挂到loadingLayerRoot之下
-            layer.gameObject.transform.SetParent(m_unusedLayerRootGo.transform, false);
-            layer.gameObject.transform.localPosition = Vector3.zero;
-            layer.gameObject.transform.localScale = Vector3.one;
-            layer.gameObject.transform.localRotation = Quaternion.identity;
-            // 设置显示状态为不显示
-            layer.gameObject.SetActive(false);
-
-            // 将layer加入到加载中列表
-            m_unusedLayerList.Add(layer);
-
-            // 设置状态
-            layer.State = SceneLayerBase.LayerState.Unused;
-        }
+        #region 内部方法
 
         /// <summary>
         /// 当layer的资源加载完成
         /// </summary>
         /// <param name="layer"></param>
         /// <param name="asset"></param>
-        private void OnLayerLoadAssetComplete(SceneLayerBase layer, GameObject asset)
+        private void OnLayerLoadAssetComplete(UILayerBase layer, GameObject asset)
         {
-            if (layer.GetType() == typeof(SceneLayerUnity))
+            if (layer.GetType() == typeof(UILayerUnity))
             {
                 return;
             }
@@ -569,43 +561,108 @@ namespace My.Framework.Runtime.Scene
             AddLayerToUnused(layer);
         }
 
-        public void UpdateAllLayerSortingOrder()
+        #region 移动层transform
+
+        /// <summary>
+        /// 将layer挂到加载列表
+        /// </summary>
+        /// <param name="layer"></param>
+        private void AddLayerToLoading(UILayerBase layer)
+        {
+            if (layer.GetType() == typeof(UILayerUnity))
+            {
+                return;
+            }
+            // 将对象挂到loadingLayerRoot之下
+            layer.gameObject.transform.SetParent(m_loadingLayerRootGo.transform, false);
+            layer.gameObject.transform.localPosition = Vector3.zero;
+            layer.gameObject.transform.localScale = Vector3.one;
+            layer.gameObject.transform.localRotation = Quaternion.identity;
+            // 设置显示状态为不显示
+            layer.gameObject.SetActive(false);
+
+            // 将layer加入到加载中列表
+            m_loadingLayerList.Add(layer);
+
+            // 设置状态
+            layer.State = UILayerBase.LayerState.Loading;
+        }
+
+        /// <summary>
+        /// 将layer挂到未使用列表
+        /// </summary>
+        /// <param name="layer"></param>
+        private void AddLayerToUnused(UILayerBase layer)
+        {
+            if (layer.GetType() == typeof(UILayerUnity))
+            {
+                return;
+            }
+
+            m_loadingLayerList.Remove(layer);
+            m_layerStack.Remove(layer);
+
+            // 将对象挂到loadingLayerRoot之下
+            layer.gameObject.transform.SetParent(m_unusedLayerRootGo.transform, false);
+            layer.gameObject.transform.localPosition = Vector3.zero;
+            layer.gameObject.transform.localScale = Vector3.one;
+            layer.gameObject.transform.localRotation = Quaternion.identity;
+            // 设置显示状态为不显示
+            layer.gameObject.SetActive(false);
+
+            // 将layer加入到加载中列表
+            m_unusedLayerList.Add(layer);
+
+            // 设置状态
+            layer.State = UILayerBase.LayerState.Unused;
+        }
+
+
+        #endregion
+
+        /// <summary>
+        /// 对Layer进行排序
+        /// </summary>
+        /// <param name="layerStack"></param>
+        private void SortLayerStack(List<UILayerBase> layerStack)
+        {
+            // 稳定的插入排序
+            int i, j;
+            // 当前排序元素的临时存储
+            UILayerBase target;
+            for (i = 1; i < layerStack.Count; i++)
+            {
+                j = i;
+
+                // 获取当前排序的元素
+                target = layerStack[i];
+
+                // 如果当前的第j个元素和第j-1个元素满足下面的比较标准，那么需要交换这两个元素的位置
+                // 将第j个元素插入到 前面的 已经排好序的元素 中一个合适的位置，使得插入后的元素序列仍然保持有序
+                while (j > 0 && target.ComparePriority(layerStack[j - 1]) < 0)
+                {
+                    layerStack[j] = layerStack[j - 1];
+                    j--;
+                }
+
+                layerStack[j] = target;
+            }
+        }
+
+        /// <summary>
+        /// 更新各层sorting order （主要时ui层）
+        /// </summary>
+        private void UpdateAllLayerSortingOrder()
         {
             int count = m_layerStack.Count;
             for (int i = 0; i < count; ++i)
             {
-                SceneLayerUI uiSceneLayer = m_layerStack[i] as SceneLayerUI;
+                UILayerNormal uiSceneLayer = m_layerStack[i] as UILayerNormal;
                 if (uiSceneLayer != null)
                 {
                     uiSceneLayer.UpdateLayerSortingOrder();
                 }
             }
-        }
-
-        /// <summary>
-        /// 获取ui物体对应camera
-        /// </summary>
-        /// <param name="go"></param>
-        /// <returns></returns>
-        public Camera GetUICamera(GameObject go)
-        {
-            Canvas canvas = GetCanvas(go);
-            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
-            {
-                return canvas.worldCamera;
-            }
-            return null;
-        }
-
-        public Canvas GetCanvas(GameObject go)
-        {
-            Canvas canvas = null;
-            SceneLayerUI uiSceneLayer = GetSceneLayer(go) as SceneLayerUI;
-            if (uiSceneLayer != null)
-            {
-                canvas = uiSceneLayer.LayerCanvas;
-            }
-            return canvas;
         }
 
         /// <summary>
@@ -626,7 +683,7 @@ namespace My.Framework.Runtime.Scene
             int currLayerCameraDepth = cameraDepthMax;
             var next3DLayerOffset = Vector3.zero;
 
-            SceneLayerUnity topSceneLayer = null;
+            UILayerUnity topSceneLayer = null;
 
             var cachedCameras = new List<Camera>();
             cachedCameras.AddRange(m_uiCameraList);
@@ -637,10 +694,10 @@ namespace My.Framework.Runtime.Scene
             for (int i = m_layerStack.Count - 1; i >= 0; i--)
             {
                 var layer = m_layerStack[i];
-                
-                if (layer.GetType() == typeof(SceneLayerUI))
+
+                if (layer.GetType() == typeof(UILayerNormal))
                 {
-                    SceneLayerUI uiSceneLayer = layer as SceneLayerUI;
+                    UILayerNormal uiSceneLayer = layer as UILayerNormal;
                     Camera uiCamera;
                     if (isCameraGroupBlocked || m_uiCameraList.Count == 0)
                     {
@@ -680,7 +737,7 @@ namespace My.Framework.Runtime.Scene
 
                     layer.transform.SetSiblingIndex(i);
                 }
-                else if (layer.GetType() == typeof(SceneLayer3D))
+                else if (layer.GetType() == typeof(UILayer3D))
                 {
                     layer.gameObject.transform.SetParent(m_3DSceneRootGo.transform, false);
                     // 为layer设置offset
@@ -694,9 +751,9 @@ namespace My.Framework.Runtime.Scene
                         isCameraGroupBlocked = true;
                     }
                 }
-                else if(layer.GetType() == typeof(SceneLayerUnity))
+                else if (layer.GetType() == typeof(UILayerUnity))
                 {
-                    topSceneLayer = topSceneLayer == null ? (SceneLayerUnity)layer : topSceneLayer;
+                    topSceneLayer = topSceneLayer == null ? (UILayerUnity)layer : topSceneLayer;
                     if (layer.LayerCamera != null)
                     {
                         layer.LayerCamera.depth = currLayerCameraDepth;
@@ -718,16 +775,16 @@ namespace My.Framework.Runtime.Scene
             {
                 foreach (var t in m_unusedLayerList)
                 {
-                    if (t.GetType() == typeof(SceneLayerUnity))
+                    if (t.GetType() == typeof(UILayerUnity))
                     {
-                        topSceneLayer = (SceneLayerUnity)t;
+                        topSceneLayer = (UILayerUnity)t;
                         break;
                     }
                 }
             }
 
             // 设置渲染
-            if(topSceneLayer != null)
+            if (topSceneLayer != null)
             {
                 //ApplyRenderSettingAsDefault(currRenderSetting);
             }
@@ -740,63 +797,37 @@ namespace My.Framework.Runtime.Scene
 
         }
 
-        /// <summary>
-        /// 排序
-        /// </summary>
-        /// <param name="layerStack"></param>
-        private void SortLayerStack(List<SceneLayerBase> layerStack)
-        {
-            // 稳定的插入排序
-            int i, j;
-            // 当前排序元素的临时存储
-            SceneLayerBase target;
-            for (i = 1; i < layerStack.Count; i++)
-            {
-                j = i;
+        #endregion
 
-                // 获取当前排序的元素
-                target = layerStack[i];
-
-                // 如果当前的第j个元素和第j-1个元素满足下面的比较标准，那么需要交换这两个元素的位置
-                // 将第j个元素插入到 前面的 已经排好序的元素 中一个合适的位置，使得插入后的元素序列仍然保持有序
-                while (j > 0 && target.ComparePriority(layerStack[j - 1]) < 0)
-                {
-                    layerStack[j] = layerStack[j - 1];
-                    j--;
-                }
-
-                layerStack[j] = target;
-            }
-        }
+        #region 工具方法
 
         /// <summary>
-        /// 找到指定的layer
+        /// 获取ui物体对应camera
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="go"></param>
         /// <returns></returns>
-        public SceneLayerBase FindLayerByName(string name)
+        public Camera GetUICamera(GameObject go)
         {
-            m_layerDict.TryGetValue(name, out var ret);
-            return ret;
-        }
-
-        public SceneLayerBase GetSceneLayer(GameObject go)
-        {
-            int count = m_layerStack.Count;
-            for (int i = 0; i < count; ++i)
+            Canvas canvas = GetCanvas(go);
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
             {
-                if (go.transform.IsChildOf(m_layerStack[i].transform))
-                {
-                    return m_layerStack[i];
-                }
-
-                if (go.transform == m_layerStack[i].transform)
-                {
-                    return m_layerStack[i];
-                }
+                return canvas.worldCamera;
             }
             return null;
         }
+
+        public Canvas GetCanvas(GameObject go)
+        {
+            Canvas canvas = null;
+            UILayerNormal uiSceneLayer = GetSceneLayer(go) as UILayerNormal;
+            if (uiSceneLayer != null)
+            {
+                canvas = uiSceneLayer.LayerCanvas;
+            }
+            return canvas;
+        }
+
+        #endregion
 
         #region 场景树对象
         /// <summary>
@@ -815,21 +846,21 @@ namespace My.Framework.Runtime.Scene
         /// <summary>
         /// 加载中的layer列表
         /// </summary>
-        private readonly List<SceneLayerBase> m_loadingLayerList = new List<SceneLayerBase>();
+        private readonly List<UILayerBase> m_loadingLayerList = new List<UILayerBase>();
 
         /// <summary>
         /// 未使用的layer列表
         /// </summary>
-        private readonly List<SceneLayerBase> m_unusedLayerList = new List<SceneLayerBase>();
+        private readonly List<UILayerBase> m_unusedLayerList = new List<UILayerBase>();
 
         /// <summary>
         /// layer的栈，保存显示层级关系,链表尾部是栈顶
         /// </summary>
-        private readonly List<SceneLayerBase> m_layerStack = new List<SceneLayerBase>();
+        private readonly List<UILayerBase> m_layerStack = new List<UILayerBase>();
         /// <summary>
         /// layer的名称字典
         /// </summary>
-        private Dictionary<string, SceneLayerBase> m_layerDict = new Dictionary<string, SceneLayerBase>();
+        private Dictionary<string, UILayerBase> m_layerDict = new Dictionary<string, UILayerBase>();
 
         // 当穿插3d物体时 需要多个ui相机
         private List<Camera> m_uiCameraList = new List<Camera>();

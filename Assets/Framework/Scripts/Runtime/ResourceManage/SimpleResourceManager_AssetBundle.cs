@@ -218,6 +218,8 @@ namespace My.Framework.Runtime.Resource
             public AssetBundle m_bundle;
             public bool m_isEnd;
             public int m_ref;
+
+            public AssetBundleCreateRequest m_assetBundleCreateRequest;
         }
 
         /// <summary>
@@ -552,6 +554,17 @@ namespace My.Framework.Runtime.Resource
                     AssetBundle assetBundle = null;
                     bool hasDone = false;
 
+                    if (bundleLoadingCtx.m_assetBundleCreateRequest != null
+                        && (bundleLoadingCtx.m_assetBundleCreateRequest.isDone || bundleLoadingCtx.m_assetBundleCreateRequest.assetBundle != null))
+                    {
+                        assetBundle = bundleLoadingCtx.m_assetBundleCreateRequest.assetBundle;
+                        hasDone = true;
+                        if (assetBundle == null)
+                        {
+                            Debug.LogError(string.Format("LoadBundle Waiting LoadingCtx LoadFromFileSync fail {0}", bundleLoadingCtx.m_bundleName));
+                        }
+                    }
+
                     if (hasDone)
                     {
                         if (assetBundle == null)
@@ -620,11 +633,16 @@ namespace My.Framework.Runtime.Resource
             AssetBundle loadedBundle = null;
             string assetBundlePath = $"{AssetBundleRootRuntime}/{bundleName}";
             float startWaitTime = Time.realtimeSinceStartup;
+            BundleLoadingCtx ctx = null;
             // “Ï≤Ωº”‘ÿ
             if (loadAync)
             {
                 //var req = AssetBundle.LoadFromFileAsync(path);
                 var req = AssetBundle.LoadFromFileAsync(assetBundlePath, 0, 0);
+                if (m_bundleLoadingCtxDict.TryGetValue(bundleName, out ctx))
+                {
+                    ctx.m_assetBundleCreateRequest = req;
+                }
                 while (!req.isDone)
                 {
                     yield return null;

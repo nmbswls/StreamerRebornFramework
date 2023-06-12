@@ -398,13 +398,9 @@ namespace My.Framework.Runtime.Resource
                         }
                     }
                 }
-
-
             }
 
-
             m_loadingOpCount--;
-
 
             // 通知调用者完成
             onCompleted(path, asset);
@@ -569,10 +565,7 @@ namespace My.Framework.Runtime.Resource
 
         #endregion
 
-
-
         #region 内部方法
-
 
         /// <summary>
         /// 定时
