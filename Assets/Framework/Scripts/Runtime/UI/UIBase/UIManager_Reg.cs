@@ -16,8 +16,11 @@ namespace My.Framework.Runtime.UI
         public virtual void DoRegister()
         {
             UIManager.Instance.RegisterUIController("EntryStartup", typeof(UIControllerEntryStartup).ToString(), 0);
-            UIManager.Instance.RegisterUIController("Loading", typeof(UIControllerLoading).ToString(), 0);
-            UIManager.Instance.RegisterUIController("MessageBox", typeof(UIControllerMessageBoxSimple).ToString(), 0);
+            UIManager.Instance.RegisterUIController("Loading", typeof(UIControllerLoading).ToString(), 99);
+            UIManager.Instance.RegisterUIController("MessageBox", typeof(UIControllerMessageBoxSimple).ToString(), 99);
+            UIManager.Instance.RegisterUIController("ScreenEffect", typeof(UIControllerScreenEffectSimple).ToString(), 99);
+
+            UIManager.Instance.RegisterUIController("Dialog", typeof(UIControllerDialogSimple).ToString(), 2);
         }
     }
 

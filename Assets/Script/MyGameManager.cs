@@ -1,14 +1,16 @@
 
+using My.ConfigData;
 using My.Framework.Runtime;
 using My.Framework.Runtime.Config;
 using My.Framework.Runtime.Resource;
 using My.Framework.Runtime.Saving;
+using My.Framework.Runtime.Storytelling;
 using My.Framework.Runtime.UI;
-using StreamerReborn.Config;
 using StreamerReborn.Saving;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using My.Framework.Runtime.Logic;
 using UnityEngine;
 
 namespace StreamerReborn
@@ -62,7 +64,7 @@ namespace StreamerReborn
         /// 创建存档管理器
         /// </summary>
         /// <returns></returns>
-        protected override SavingManagerBase CreateSavingManager()
+        protected override SavingManager CreateSavingManager()
         {
             return new SavingManagerRB();
         }
@@ -77,11 +79,19 @@ namespace StreamerReborn
         }
 
 
-        protected override GamePlayerBase CreateGamePlayer()
+        protected override GamePlayer CreateGamePlayer()
         {
             return new GamePlayer();
         }
 
+        /// <summary>
+        /// 创建存档管理器
+        /// </summary>
+        /// <returns></returns>
+        protected override StorytellingSystemBase CreateStorytellingSystem()
+        {
+            return new MyStorytellingSystem();
+        }
 
         /// <summary>
         /// 初始化
@@ -100,11 +110,7 @@ namespace StreamerReborn
             return true;
         }
 
-        /// <summary>
-        /// 游戏世界管理
-        /// </summary>
-        public GameWorldBase GameWorld { get { return m_gameWorld; } }
-        protected GameWorldBase m_gameWorld;
+        
 
         #region 游戏进程控制
 

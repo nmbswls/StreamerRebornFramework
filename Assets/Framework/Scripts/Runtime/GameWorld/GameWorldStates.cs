@@ -38,7 +38,6 @@ namespace My.Framework.Runtime
 
     /// <summary>
     /// 世界状态 - 大厅中
-    /// 非法状态，表示主菜单等游戏外状态
     /// </summary>
     public class GameWorldStateSimpleHall : GameWorldStateBase
     {
@@ -63,6 +62,7 @@ namespace My.Framework.Runtime
         /// </summary>
         protected override IEnumerator OnEnter()
         {
+
             var sceneName = GetMainSceneName();
             yield return SwitchSceneSimple(sceneName, onSwitchEnd: OnEnterHall);
         }
@@ -78,8 +78,42 @@ namespace My.Framework.Runtime
                 return;
             }
 
-            ClearAllContextAndRes();
+            // 清理
+            m_cameraManager?.UnInitialize();
+            m_cameraManager = null;
+
+            base.OnExit();
         }
+
+        protected override void OnPause()
+        {
+            foreach(var sceneHandler in m_loadedSceneDict.Values)
+            {
+                sceneHandler.MainRootGameObject.SetActive(false);
+            }
+        }
+
+        protected override void OnResume()
+        {
+            foreach (var sceneHandler in m_loadedSceneDict.Values)
+            {
+                sceneHandler.MainRootGameObject.SetActive(true);
+            }
+        }
+
+        /// <summary>
+        /// 获取主场景句柄类
+        /// </summary>
+        /// <returns></returns>
+        public SceneHandlerHall GetMainSceneHandler()
+        {
+            if(m_loadedSceneDict.Count == 0)
+            {
+                return null;
+            }
+            return (SceneHandlerHall)m_loadedSceneDict.First().Value;
+        }
+
 
         /// <summary>
         /// 进入大厅后执行逻辑
@@ -87,6 +121,15 @@ namespace My.Framework.Runtime
         public void OnEnterHall(bool ret)
         {
             Debug.Log("进入大厅 " + ret);
+
+            var main = GetMainSceneHandler();
+            // do init
+            var virtualRoot = main.MainRootGameObject.transform.Find("VirtualCameraRoot");
+            var mainCamera = main.MainRootGameObject.transform.Find("MainCamera").GetComponent<Camera>();
+            m_cameraManager = new WorldCameraManager();
+            m_cameraManager.Initialize(virtualRoot, mainCamera);
+
+            UIControllerLoading.StopLoadingUI();
         }
 
         /// <summary>
@@ -98,12 +141,19 @@ namespace My.Framework.Runtime
             return m_defaultSceneName;
         }
 
+
         #region 内部变量
 
         /// <summary>
         /// 主场景名
         /// </summary>
         protected string m_defaultSceneName = "Assets/Scenes/Hall.unity";
+
+        /// <summary>
+        /// 相机管理器
+        /// </summary>
+        public WorldCameraManager CameraManager { get { return m_cameraManager; } }
+        protected WorldCameraManager m_cameraManager;
 
         #endregion
 

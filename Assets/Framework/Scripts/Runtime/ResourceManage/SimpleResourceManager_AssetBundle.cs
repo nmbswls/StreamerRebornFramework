@@ -338,7 +338,6 @@ namespace My.Framework.Runtime.Resource
             // 获取asset名称
             //string assetName = GetAssetNameByPath(path);
             string assetName = Path.GetFileName(path);
-            Debug.LogError(string.Format("Load Asset  Name : " + assetName));
             // 从bundle加载资源
             UnityEngine.Object[] allAssets;
             if (loadAync)
@@ -358,7 +357,7 @@ namespace My.Framework.Runtime.Resource
 
             if (allAssets == null || allAssets.Length <= 0)
             {
-                Debug.LogError(string.Format("LoadAssetFromBundle bundle.LoadAsset fail {0} {1}", assetName, assetBundleInfo.m_bundleName));
+                //Debug.LogError(string.Format("LoadAssetFromBundle bundle.LoadAsset fail {0} {1}", assetName, assetBundleInfo.m_bundleName));
 
                 onCompleted(path, null, null);
                 yield break;
@@ -915,6 +914,61 @@ namespace My.Framework.Runtime.Resource
 
             return true;
         }
+
+        /// <summary>
+        /// 卸载所有的bundle
+        /// </summary>
+        public void UnloadAllBundles(string unloadSource, bool bForceRoot = false, bool bForceDependency = false)
+        {
+            m_TempRemoveCacheBundleList.Clear();
+            // 卸载所有未标记不要卸载的bundle
+            foreach (var item in m_bundleCacheDict)
+            {
+                //被依赖的不处理
+                if (!item.Value.m_bRootLoad)
+                {
+                    continue;
+                }
+
+                if (item.Value.m_dependBundleCacheList != null)
+                {
+                    foreach (var depBundleCacheItem in item.Value.m_dependBundleCacheList)
+                    {
+                        depBundleCacheItem.RemoveRefrence();
+                        if (depBundleCacheItem.RefCount == 0)
+                        {
+                            if (depBundleCacheItem.m_bundle != null)
+                            {
+                                depBundleCacheItem.m_bundle.Unload(bForceDependency);
+                            }
+                            m_TempRemoveCacheBundleList.Add(depBundleCacheItem.m_bundleName);
+                        }
+                    }
+                }
+
+                item.Value.RemoveRefrence();
+                //设置为false，不然如果refcount不为零那就每次unload都会把自己认为是root去unload
+                item.Value.m_bRootLoad = false;
+                if (item.Value.RefCount == 0)
+                {
+#if UNITY_EDITOR
+                    //Debug.Log("[ResourceManager]Unload AssetBundle: " + item.Key);
+#endif
+                    if (item.Value.m_bundle != null)
+                    {
+                        item.Value.m_bundle.Unload(bForceRoot);
+                    }
+                    m_TempRemoveCacheBundleList.Add(item.Key);
+                }
+            }
+            foreach (string rmName in m_TempRemoveCacheBundleList)
+            {
+                m_bundleCacheDict.Remove(rmName);
+            }
+        }
+
+        private List<string> m_TempRemoveCacheBundleList = new List<string>();
+
 
         /// <summary>
         /// 正在进行的UnloadUnusedAssets

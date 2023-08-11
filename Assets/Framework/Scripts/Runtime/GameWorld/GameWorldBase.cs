@@ -66,6 +66,15 @@ namespace My.Framework.Runtime
             m_stateMachine.ChangeState(GameWorldStateTypeDefineBase.SimpleHall);
         }
         
+        /// <summary>
+        /// 获得当前状态
+        /// </summary>
+        public GameWorldStateBase GetCurrState()
+        {
+            return m_stateMachine.CurrentState;
+        }
+
+
         #endregion
 
         #region 子类继承

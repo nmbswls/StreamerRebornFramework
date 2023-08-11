@@ -39,7 +39,6 @@ namespace My.Framework.Runtime
         /// </summary>
         public void Initialize()
         {
-
         }
 
         /// <summary>

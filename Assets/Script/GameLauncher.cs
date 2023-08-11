@@ -7,6 +7,22 @@ using UnityEngine;
 
 namespace StreamerReborn
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public class MyUIRegister : UIRegisterBase
+    {
+        /// <summary>
+        /// 执行注册
+        /// </summary>
+        public override void DoRegister()
+        {
+            base.DoRegister();
+
+            UIManager.Instance.RegisterUIController("WorldOverlay", typeof(UIControllerWorldOverlay).ToString(), 4);
+        }
+    }
+
     public class GameLauncher : MonoBehaviour
     {
         // Use this for initialization
@@ -27,17 +43,16 @@ namespace StreamerReborn
 
 
             bool? ret = null;
-            GameStatic.ConfigDataLoader.TryLoadInitConfig(
-                (lret) => { 
-                    ret = lret;
-                }
-                );
+            m_gameManager.StartLoadConfigData((lret) => {
+                ret = lret;
+            }, out var configDataInitLoadCount);
+            
             while (ret == null) { yield return null; }
 
             yield return null;
 
             // 注册ui资源
-            GameStatic.UIManager.InitUITaskRegister<UIRegisterBase>();
+            GameStatic.UIManager.InitUITaskRegister<MyUIRegister>();
 
             // 启动进门ui
             var entryUI = GameStatic.UIManager.StartUIController(new UIIntent("EntryStartup")) as UIControllerEntryStartup;
@@ -45,7 +60,6 @@ namespace StreamerReborn
             {
                 Debug.LogError("SampleGameEntryUITask start fail");
             }
-            entryUI.EventOnEnter += GameStatic.MyGameManager.GameWorld.EnterHall;
         }
 
         void Update()

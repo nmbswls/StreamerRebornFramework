@@ -281,8 +281,10 @@ namespace My.Framework.Runtime.UI
 
             ClearAllContextAndRes();
 
+            // 供重写方法
             OnStop();
-
+            
+            // 清理comp
             if (m_uiCompArray != null)
             {
                 foreach (var comp in m_uiCompArray)
@@ -294,6 +296,14 @@ namespace My.Framework.Runtime.UI
                 }
                 m_uiCompArray = null;
             }
+
+            // 触发上层回调事件
+            if (EventOnStop != null)
+            {
+                EventOnStop(this);
+                EventOnStop = null;
+            }
+
         }
 
         /// <summary>
@@ -301,14 +311,14 @@ namespace My.Framework.Runtime.UI
         /// </summary>
         /// <param name="intent"></param>
         /// <returns></returns>
-        public virtual bool OnNewIntent(UIIntent intent)
+        public virtual bool OnNewIntent(UIIntent intent, Action<bool> onPipelineEnd)
         {
             if (State != UIState.Running)
             {
                 return false;
             }
 
-            if (!StartRefreshPipeLine(intent))
+            if (!StartRefreshPipeLine(intent, onPipelineEnd))
             {
                 return false;
             }
@@ -329,6 +339,7 @@ namespace My.Framework.Runtime.UI
             }
 
             // 是否还有管线在运行中
+            // TODO 缓存intent持续进行
             if (m_currPipelineCtx.m_isRuning)
             {
                 return false;
@@ -371,6 +382,16 @@ namespace My.Framework.Runtime.UI
 
             return true;
         }
+
+        /// <summary>
+        /// 是否有管线在运行
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAnyPipelineRunning()
+        {
+            return (m_currPipelineCtx != null && m_currPipelineCtx.m_isRuning);
+        }
+
 
         /// <summary>
         /// 解析intent为内部变量
@@ -1287,7 +1308,10 @@ namespace My.Framework.Runtime.UI
 
         #region 事件
 
-        
+        /// <summary>
+        /// ui结束事件
+        /// </summary>
+        public event Action<UIControllerBase> EventOnStop;
 
         #endregion
 

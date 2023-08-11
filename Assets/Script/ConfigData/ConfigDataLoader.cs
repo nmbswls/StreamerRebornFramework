@@ -1,10 +1,12 @@
 using My.Framework.Runtime;
 using My.Framework.Runtime.Config;
+using My.Framework.Runtime.Storytelling;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace StreamerReborn.Config
+namespace My.ConfigData
 {
     public partial class ConfigDataLoader : ConfigDataLoaderBase
     {
@@ -18,20 +20,32 @@ namespace StreamerReborn.Config
             InitDeserializFunc4ConfigData();
         }
 
-        /// <summary>
-        /// 加载配置
-        /// </summary>
-        /// <param name="onEnd"></param>
-        /// <returns></returns>
-        public void TryLoadInitConfig(System.Action<bool> onEnd)
+        public override void PreInitConfig()
         {
-            var pathSet = new HashSet<string>();
-            foreach (var configName in m_validConfigDataName)
             {
-                pathSet.Add($"{ConfigPrefex}/{configName}.json");
+                var storyBlockConfs = GetAllConfigDataStoryBlockInfo();
+                foreach(var pair in storyBlockConfs)
+                {
+                    foreach(var commandId in pair.Value.CommandIdList)
+                    {
+                        var commandConf = GetConfigDataStoryCommandInfo(commandId);
+                        pair.Value.CommandList.Add(commandConf);
+                    }
+                    foreach (string optionCommand in pair.Value.OptionIdList)
+                    {
+                        pair.Value.CommandOptionList.Add(new OptionCommand(optionCommand));
+                    }
+                }
             }
-            //加载在init阶段需要加载的配置数据
-            GameManager.Instance.StartCoroutine(InitLoadConfigData(pathSet, 1, 30, onEnd));
+        }
+
+        /// <summary>
+        /// 通过配置名获取加载路径
+        /// </summary>
+        /// <returns></returns>
+        protected override string GetConfigPathByName(string configName)
+        {
+            return $"{ConfigPrefex}/{configName}.json";
         }
 
         public const string ConfigPrefex = "Assets/RuntimeAssets/ConfigData/";

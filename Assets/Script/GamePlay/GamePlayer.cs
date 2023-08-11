@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace StreamerReborn
 {
-    public partial class GamePlayer : GamePlayerBase
+    public partial class MyGamePlayer : GamePlayer
     {
         
     }

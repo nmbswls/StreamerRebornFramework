@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using My.Framework.Runtime.Logic;
 using UnityEngine;
 
 namespace StreamerReborn
 {
-    public partial class GamePlayer
+    public partial class MyGamePlayer
     {
-        public string StringData = "NMSLLLLLLLLLLLL天使";
-        public Dictionary<string, string> datas = new Dictionary<string, string>();
+
     }
 }
 

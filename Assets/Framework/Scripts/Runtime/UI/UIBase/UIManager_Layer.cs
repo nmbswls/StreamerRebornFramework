@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 namespace My.Framework.Runtime.UI
@@ -265,7 +266,6 @@ namespace My.Framework.Runtime.UI
         /// <returns></returns>
         private bool CreateSceneRoot()
         {
-            Debug.Log("SceneManager.CreateSceneRoot start");
             var sceneRootPrefab = Resources.Load<GameObject>("SceneRoot");
             m_sceneRootGo = GameObject.Instantiate(sceneRootPrefab);
             if (m_sceneRootGo == null)
@@ -356,12 +356,14 @@ namespace My.Framework.Runtime.UI
             cameraGo = new GameObject();
             cameraGo.name = "UICamera";
             var camera = cameraGo.AddComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.Depth;
+            camera.clearFlags = CameraClearFlags.Nothing;
             camera.cullingMask = 1 << LayerMask.NameToLayer("UI");
             camera.orthographic = true;
             camera.orthographicSize = 5.4f;
             camera.depth = 50;
 
+            //var additionalData = camera.GetComponent<UniversalAdditionalCameraData>();
+            //additionalData.SetBackgroundOverrideParams
             return cameraGo;
         }
 

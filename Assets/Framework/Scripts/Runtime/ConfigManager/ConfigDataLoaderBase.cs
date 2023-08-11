@@ -12,6 +12,52 @@ namespace My.Framework.Runtime.Config
     {
 
         /// <summary>
+        /// 加载配置
+        /// </summary>
+        /// <param name="onEnd"></param>
+        public virtual bool TryLoadInitConfig(System.Action<bool> onEnd, out int initLoadDataCount)
+        {
+            var pathSet = new HashSet<string>();
+            foreach (var configName in m_validConfigDataName)
+            {
+                pathSet.Add(GetConfigPathByName(configName));
+            }
+            initLoadDataCount = pathSet.Count;
+            if(pathSet.Count == 0)
+            {
+                onEnd?.Invoke(true);
+                return true;
+            }
+            //加载在init阶段需要加载的配置数据
+            GameManager.Instance.StartCoroutine(InitLoadConfigData(pathSet, 1, 30, onEnd));
+            return true;
+        }
+
+        /// <summary>
+        /// 通过配置名获取加载路径
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GetConfigPathByName(string configName)
+        {
+            return configName;
+        }
+
+
+        /// <summary>
+        /// 预处理
+        /// </summary>
+        public virtual void PreInitConfig()
+        {
+
+            #region 对话信息
+
+            #endregion
+
+        }
+
+
+
+        /// <summary>
         /// 执行初始化加载
         /// </summary>
         /// <param name="pathSet"></param>

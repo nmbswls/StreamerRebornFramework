@@ -27,7 +27,7 @@ namespace My.Framework.Runtime.UI
         /// </summary>
         /// <param name="intent"></param>
         /// <returns></returns>
-        public UIControllerBase StartUIController(UIIntent intent, bool pushIntentToStack = false)
+        public UIControllerBase StartUIController(UIIntent intent, bool pushIntentToStack = false, Action<bool> onPipelineEnd = null)
         {
             if (!m_uiControllerRegDict.ContainsKey(intent.TargetUIName))
             {
@@ -42,7 +42,7 @@ namespace My.Framework.Runtime.UI
                 return null;
             }
 
-            if (!StartUIControllerInternal(targetUIController, intent, pushIntentToStack))
+            if (!StartUIControllerInternal(targetUIController, intent, pushIntentToStack, onPipelineEnd))
             {
                 Debug.LogError($"StartUITask fail for GetOrCreateUITask null TargetTaskName={intent.TargetUIName}");
                 return null;
@@ -79,6 +79,19 @@ namespace My.Framework.Runtime.UI
             return targetTask;
         }
 
+        /// <summary>
+        /// 停止
+        /// </summary>
+        /// <param name="uiName"></param>
+        public void StopUIController(string uiName)
+        {
+            var ctrl = FindUIControllerByName(uiName);
+            if (ctrl != null)
+            {
+                Debug.Log(string.Format("StopUIController ctrl={0}", ctrl));
+                ctrl.Stop();
+            }
+        }
 
         /// <summary>
         /// 根据ui名称获取controller
@@ -94,6 +107,30 @@ namespace My.Framework.Runtime.UI
             }
 
             return targetTask;
+        }
+
+        /// <summary>
+        /// 隐藏组中的所有ui
+        /// </summary>
+        public void HideAllByGroup(int groupId)
+        {
+            var uiList = new List<UIControllerBase>();
+            foreach (var kv in m_uiControllerDict)
+            {
+                uiList.Add(kv.Value);
+            }
+
+            foreach (var ctrl in uiList)
+            {
+                if(!m_uiControllerRegDict.TryGetValue(ctrl.Name, out var regItem))
+                {
+                    continue;
+                }
+                if(regItem.m_uiGroup == groupId)
+                {
+                    ctrl.Stop();
+                }
+            }
         }
 
         #endregion
@@ -180,7 +217,7 @@ namespace My.Framework.Runtime.UI
         /// <param name="intent"></param>
         /// <param name="pushIntentToStack"></param>
         /// <returns></returns>
-        private bool StartUIControllerInternal(UIControllerBase ctrl, UIIntent intent, bool pushIntentToStack)
+        private bool StartUIControllerInternal(UIControllerBase ctrl, UIIntent intent, bool pushIntentToStack, Action<bool> onPipelineEnd = null)
         {
             // 首先关闭所有存在冲突的ui
             CloseAllConflictUI(intent.TargetUIName);
@@ -191,7 +228,7 @@ namespace My.Framework.Runtime.UI
                 m_uiIntentStack.Add(intent);
             }
 
-            var ret = StartOrResumeControllerUI(ctrl, intent);
+            var ret = StartOrResumeControllerUI(ctrl, intent, onPipelineEnd);
             if (!ret)
             {
                 Debug.LogError(string.Format("StartUITask fail task={0}", ctrl.Name));
@@ -253,18 +290,19 @@ namespace My.Framework.Runtime.UI
 
         #endregion
 
-        private bool StartOrResumeControllerUI(UIControllerBase uiCtrl, UIIntent intent)
+        private bool StartOrResumeControllerUI(UIControllerBase uiCtrl, UIIntent intent, Action<bool>  onPipelineEnd)
         {
             switch (uiCtrl.State)
             {
                 case UIControllerBase.UIState.Init:
-                    return uiCtrl.Start(intent);
+                    uiCtrl.EventOnStop += OnUIStop;
+                    return uiCtrl.Start(intent, onPipelineEnd);
                 case UIControllerBase.UIState.Suspend:
-                    return uiCtrl.Start(intent);
+                    return uiCtrl.Resume(intent, onPipelineEnd);
                 case UIControllerBase.UIState.Running:
-                    return uiCtrl.OnNewIntent(intent);
+                    return uiCtrl.OnNewIntent(intent, onPipelineEnd);
                 case UIControllerBase.UIState.Stopped:
-                    Debug.LogError($"StartOrResumeUI fail in TaskState.Stopped task={uiCtrl}");
+                    Debug.LogError($"StartOrResumeUI fail. Not Valid state.");
                     return false;
                 default:
                     return false;
@@ -303,8 +341,6 @@ namespace My.Framework.Runtime.UI
         /// <param name="task"></param>
         private void OnUIStop(UIControllerBase ctrl)
         {
-            Debug.Log("UIManager::OnUIStop ");
-
             if (m_uiControllerDict.ContainsKey(ctrl.Name))
             {
                 m_uiControllerDict.Remove(ctrl.Name);

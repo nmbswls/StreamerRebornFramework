@@ -429,11 +429,27 @@ namespace My.Framework.Runtime.Resource
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="desc"></param>
+        /// <returns></returns>
+        public IEnumerator UnloadUnusedAssetDirect(string desc = "")
+        {
+            CleanUnusedAssetsCache();
+            yield return null;
+            UnloadAllBundles(desc);
+            yield return null;
+            GC.Collect();
+            yield return null;
+            UnityEngine.Resources.UnloadUnusedAssets();
+        }
+
         #endregion
 
 
 
-        
+
 
         #region 内部加载方式
 

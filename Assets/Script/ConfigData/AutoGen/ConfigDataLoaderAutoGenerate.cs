@@ -9,7 +9,7 @@ using System.Text;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using My.Framework.Runtime.Config;
-namespace StreamerReborn.Config {
+namespace My.ConfigData {
 
     public partial class ConfigDataLoader : ConfigDataLoaderBase
     {
@@ -17,6 +17,12 @@ namespace StreamerReborn.Config {
         {
 
             m_validConfigDataName.Add("CardBattleInfo");
+
+            m_validConfigDataName.Add("CutsceneInfo");
+
+            m_validConfigDataName.Add("StoryBlockInfo");
+
+            m_validConfigDataName.Add("StoryCommandInfo");
 
             m_validConfigDataName.Add("MultiLangInfo_CN");
 
@@ -27,6 +33,12 @@ namespace StreamerReborn.Config {
         {
 
             m_deserializFuncDict["CardBattleInfo"] = DeserializFunc4ConfigDataCardBattleInfo;
+
+            m_deserializFuncDict["CutsceneInfo"] = DeserializFunc4ConfigDataCutsceneInfo;
+
+            m_deserializFuncDict["StoryBlockInfo"] = DeserializFunc4ConfigDataStoryBlockInfo;
+
+            m_deserializFuncDict["StoryCommandInfo"] = DeserializFunc4ConfigDataStoryCommandInfo;
 
             m_deserializFuncDict["MultiLangInfo_CN"] = DeserializFunc4ConfigDataMultiLangInfo_CN;
 
@@ -41,6 +53,39 @@ namespace StreamerReborn.Config {
                 foreach(var pair in data)
                 {
                     m_ConfigDataCardBattleInfoData[pair.Key] = pair.Value;
+                }
+            }
+        }
+        public void DeserializFunc4ConfigDataCutsceneInfo(string content)
+        {
+            var data = JsonConvert.DeserializeObject<Dictionary<int, ConfigDataCutsceneInfo>>(content);
+            if(data != null)
+            {
+                foreach(var pair in data)
+                {
+                    m_ConfigDataCutsceneInfoData[pair.Key] = pair.Value;
+                }
+            }
+        }
+        public void DeserializFunc4ConfigDataStoryBlockInfo(string content)
+        {
+            var data = JsonConvert.DeserializeObject<Dictionary<int, ConfigDataStoryBlockInfo>>(content);
+            if(data != null)
+            {
+                foreach(var pair in data)
+                {
+                    m_ConfigDataStoryBlockInfoData[pair.Key] = pair.Value;
+                }
+            }
+        }
+        public void DeserializFunc4ConfigDataStoryCommandInfo(string content)
+        {
+            var data = JsonConvert.DeserializeObject<Dictionary<int, ConfigDataStoryCommandInfo>>(content);
+            if(data != null)
+            {
+                foreach(var pair in data)
+                {
+                    m_ConfigDataStoryCommandInfoData[pair.Key] = pair.Value;
                 }
             }
         }
@@ -91,6 +136,75 @@ namespace StreamerReborn.Config {
         public void ClearConfigDataCardBattleInfo()
         {
             m_ConfigDataCardBattleInfoData.Clear();
+        }
+
+
+        public ConfigDataCutsceneInfo GetConfigDataCutsceneInfo(int key)
+        {
+            ConfigDataCutsceneInfo data;
+            if(m_ConfigDataCutsceneInfoData.TryGetValue(key, out data))
+            {
+                return data;
+            }
+            return null;
+        }
+
+
+        public Dictionary<int,ConfigDataCutsceneInfo> GetAllConfigDataCutsceneInfo()
+        {
+            return m_ConfigDataCutsceneInfoData;
+        }
+
+
+        public void ClearConfigDataCutsceneInfo()
+        {
+            m_ConfigDataCutsceneInfoData.Clear();
+        }
+
+
+        public ConfigDataStoryBlockInfo GetConfigDataStoryBlockInfo(int key)
+        {
+            ConfigDataStoryBlockInfo data;
+            if(m_ConfigDataStoryBlockInfoData.TryGetValue(key, out data))
+            {
+                return data;
+            }
+            return null;
+        }
+
+
+        public Dictionary<int,ConfigDataStoryBlockInfo> GetAllConfigDataStoryBlockInfo()
+        {
+            return m_ConfigDataStoryBlockInfoData;
+        }
+
+
+        public void ClearConfigDataStoryBlockInfo()
+        {
+            m_ConfigDataStoryBlockInfoData.Clear();
+        }
+
+
+        public ConfigDataStoryCommandInfo GetConfigDataStoryCommandInfo(int key)
+        {
+            ConfigDataStoryCommandInfo data;
+            if(m_ConfigDataStoryCommandInfoData.TryGetValue(key, out data))
+            {
+                return data;
+            }
+            return null;
+        }
+
+
+        public Dictionary<int,ConfigDataStoryCommandInfo> GetAllConfigDataStoryCommandInfo()
+        {
+            return m_ConfigDataStoryCommandInfoData;
+        }
+
+
+        public void ClearConfigDataStoryCommandInfo()
+        {
+            m_ConfigDataStoryCommandInfoData.Clear();
         }
 
 
@@ -147,6 +261,12 @@ namespace StreamerReborn.Config {
 #region 数据定义
 
         private Dictionary<int, ConfigDataCardBattleInfo> m_ConfigDataCardBattleInfoData = new Dictionary<int, ConfigDataCardBattleInfo>();
+
+        private Dictionary<int, ConfigDataCutsceneInfo> m_ConfigDataCutsceneInfoData = new Dictionary<int, ConfigDataCutsceneInfo>();
+
+        private Dictionary<int, ConfigDataStoryBlockInfo> m_ConfigDataStoryBlockInfoData = new Dictionary<int, ConfigDataStoryBlockInfo>();
+
+        private Dictionary<int, ConfigDataStoryCommandInfo> m_ConfigDataStoryCommandInfoData = new Dictionary<int, ConfigDataStoryCommandInfo>();
 
         private Dictionary<int, ConfigDataMultiLangInfo_CN> m_ConfigDataMultiLangInfo_CNData = new Dictionary<int, ConfigDataMultiLangInfo_CN>();
 

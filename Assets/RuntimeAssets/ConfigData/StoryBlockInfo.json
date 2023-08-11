@@ -1,0 +1,37 @@
+{
+  "10000": {
+    "ID": 10000,
+    "JsonInfo": "",
+    "CommandIdList": [
+      10001,
+      10002,
+      10003,
+      10004
+    ],
+    "OptionIdList": []
+  },
+  "10001": {
+    "ID": 10001,
+    "JsonInfo": "",
+    "CommandIdList": [],
+    "OptionIdList": []
+  },
+  "10002": {
+    "ID": 10002,
+    "JsonInfo": "",
+    "CommandIdList": [],
+    "OptionIdList": []
+  },
+  "10003": {
+    "ID": 10003,
+    "JsonInfo": "",
+    "CommandIdList": [],
+    "OptionIdList": []
+  },
+  "10004": {
+    "ID": 10004,
+    "JsonInfo": "",
+    "CommandIdList": [],
+    "OptionIdList": []
+  }
+}

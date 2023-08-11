@@ -30,6 +30,13 @@ namespace My.Framework.Runtime
     }
 
     /// <summary>
+    /// scene 管理器
+    /// </summary>
+    public class SceneHandlerHall : SceneHandlerBase
+    {
+        public Transform m_dynamicRoot;
+    }
+    /// <summary>
     /// 游戏状态机 状态类
     /// </summary>
     public abstract class GameWorldStateBase
@@ -87,6 +94,14 @@ namespace My.Framework.Runtime
         }
 
 
+        /// <summary>
+        /// 获取主相机
+        /// </summary>
+        public virtual void GetMainCameraControl()
+        {
+
+        }
+
         #endregion
 
         #region 状态切换
@@ -103,6 +118,7 @@ namespace My.Framework.Runtime
         protected virtual void OnExit()
         {
             m_onEndAction = null;
+            ClearAllContextAndRes();
         }
 
         protected virtual void OnPause()
@@ -318,8 +334,10 @@ namespace My.Framework.Runtime
                 return;
             }
             var rootGo = rootGameObjects[0];
-            var handler = rootGo.AddComponent<SceneHandlerBase>();
+            var handler = rootGo.AddComponent<SceneHandlerHall>();
             m_loadedSceneDict.TryAdd(sceneName, handler);
+            handler.UnityScene = scene;
+            handler.MainRootGameObject = rootGo;
             handler.Initialize();
         }
 

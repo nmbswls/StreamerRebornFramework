@@ -2,31 +2,31 @@
   "100": {
     "ID": 100,
     "CardType": 1,
-    "Text": "<sprite=0>*3 <sprite=1>*4",
+    "Text": "0",
     "Image": "100"
   },
   "101": {
     "ID": 101,
     "CardType": 1,
-    "Text": "<sprite=0>*3 <sprite=1>*4",
+    "Text": "5",
     "Image": "101"
   },
   "102": {
     "ID": 102,
     "CardType": 1,
-    "Text": "<sprite=0>*3 <sprite=1>*4",
+    "Text": "5",
     "Image": "102"
   },
   "103": {
     "ID": 103,
-    "CardType": 2,
-    "Text": "<sprite=0>*1 <sprite=1>*1",
+    "CardType": 1,
+    "Text": "5",
     "Image": "103"
   },
   "104": {
     "ID": 104,
-    "CardType": 2,
-    "Text": "<sprite=0>*1 <sprite=1>*1",
+    "CardType": 1,
+    "Text": "6",
     "Image": "104"
   }
 }

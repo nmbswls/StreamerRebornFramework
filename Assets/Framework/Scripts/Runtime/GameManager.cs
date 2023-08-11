@@ -1,18 +1,21 @@
 
+using My.Framework.Battle;
 using My.Framework.Runtime;
+using My.Framework.Runtime.Common;
 using My.Framework.Runtime.Config;
 using My.Framework.Runtime.Resource;
 using My.Framework.Runtime.Saving;
+using My.Framework.Runtime.Storytelling;
 using My.Framework.Runtime.UI;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using My.Framework.Battle.View;
 using UnityEngine;
 
 namespace My.Framework.Runtime
 {
     
-
     /// <summary>
     /// 最小GameManager
     /// </summary>
@@ -97,6 +100,10 @@ namespace My.Framework.Runtime
             // 创建玩家类
             m_gamePlayer = CreateGamePlayer();
 
+            // 叙事系统
+            m_storytellingSystem = CreateStorytellingSystem();
+            m_storytellingSystem.Initialize();
+
             return true;
         }
 
@@ -110,7 +117,38 @@ namespace My.Framework.Runtime
             m_resourceManager.Tick();
             m_uiManager.Tick(Time.deltaTime);
             m_savingManager.Tick();
+
+            m_storytellingSystem?.Tick();
+
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                LaunchBattle();
+            }
+
+            // TODO 移动到统一tick入口中
+            BattleManager.Instance.OnTick(Time.deltaTime);
         }
+
+        /// <summary>
+        /// 进入新游戏
+        /// </summary>
+        public void NewGame()
+        {
+            m_gamePlayer.OnLoadGame(null);
+            m_gameWorld.EnterHall();
+        }
+
+        /// <summary>
+        /// 加载游戏
+        /// </summary>
+        public void LoadGame(int savingIdx)
+        {
+            
+
+            // 切换状态
+            m_gameWorld.EnterHall();
+        }
+
 
         /// <summary>
         /// 启动携程
@@ -129,11 +167,12 @@ namespace My.Framework.Runtime
         }
 
         #region 装配组件
+
         /// <summary>
         /// 创建存档管理器
         /// </summary>
         /// <returns></returns>
-        protected virtual SavingManagerBase CreateSavingManager()
+        protected virtual SavingManager CreateSavingManager()
         {
             throw new NotImplementedException();
         }
@@ -151,9 +190,47 @@ namespace My.Framework.Runtime
         /// 创建GamePlayer
         /// </summary>
         /// <returns></returns>
-        protected virtual GamePlayerBase CreateGamePlayer()
+        protected virtual GamePlayer CreateGamePlayer()
+        {
+            return new GamePlayer();
+        }
+
+        /// <summary>
+        /// 创建存档管理器
+        /// </summary>
+        /// <returns></returns>
+        protected virtual StorytellingSystemBase CreateStorytellingSystem()
         {
             throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region 配置相关
+
+        /// <summary>
+        /// 开始加载配置数据
+        /// </summary>
+        /// <param name="onEnd"></param>
+        /// <returns></returns>
+
+        public virtual bool StartLoadConfigData(Action<bool> onEnd, out int initLoadDataCount)
+        {
+            return m_configDataLoader.TryLoadInitConfig((ret)=> {
+                
+                if(ret)
+                {
+                    OnLoadConfigDataEnd();
+                }
+                // 触发回调
+                onEnd?.Invoke(ret);
+            }, out initLoadDataCount);
+        }
+
+        protected virtual void OnLoadConfigDataEnd()
+        {
+            // 初始化
+            m_configDataLoader.PreInitConfig();
         }
 
         #endregion
@@ -168,6 +245,13 @@ namespace My.Framework.Runtime
         {
             Debug.LogError(string.Format("OnUnhandledException  {0} {1}", sender, e));
         }
+
+        #region 战斗等子模式
+
+        
+
+        #endregion
+
 
         #region 内部变量
 
@@ -192,14 +276,26 @@ namespace My.Framework.Runtime
         /// <summary>
         /// 数据类
         /// </summary>
-        public SavingManagerBase SavingManager { get { return m_savingManager; } }
-        protected SavingManagerBase m_savingManager;
+        public SavingManager SavingManager { get { return m_savingManager; } }
+        protected SavingManager m_savingManager;
+
+        /// <summary>
+        /// 故事控制器
+        /// </summary>
+        public StorytellingSystemBase StorytellingSystem { get { return m_storytellingSystem; } }
+        protected StorytellingSystemBase m_storytellingSystem;
+
+        /// <summary>
+        /// 游戏世界管理
+        /// </summary>
+        public GameWorldBase GameWorld { get { return m_gameWorld; } }
+        protected GameWorldBase m_gameWorld;
 
         /// <summary>
         /// 玩家功能类
         /// </summary>
-        public GamePlayerBase GamePlayer { get { return m_gamePlayer; } }
-        protected GamePlayerBase m_gamePlayer;
+        public GamePlayer GamePlayer { get { return m_gamePlayer; } }
+        protected GamePlayer m_gamePlayer;
 
         /// <summary>
         /// corutine管理
@@ -226,7 +322,8 @@ namespace My.Framework.Runtime
         /// </summary>
         public string m_currLocalization;
 
+
     }
-    
+
 }
 

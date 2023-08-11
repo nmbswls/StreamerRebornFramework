@@ -7,7 +7,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace StreamerReborn.Config {
+namespace My.ConfigData {
 
 #region subtypes
 
@@ -35,6 +35,12 @@ namespace StreamerReborn.Config {
     }
 
 
+    public class ActorBornInfo
+    {
+        public Int32 ActorId; // 
+        public String BornPoint; // 
+    }
+
 #endregion
 
 
@@ -42,6 +48,9 @@ namespace StreamerReborn.Config {
 #region enums
 
 
+    public enum Sample
+    {
+    }
 
 
 #endregion
@@ -61,7 +70,47 @@ namespace StreamerReborn.Config {
 
         public String Image; // 图片
 
-        public List<int> Feature = new List<int>();
+    }
+
+
+    public partial class ConfigDataCutsceneInfo
+    {
+
+        public Int32 ID; // 主键
+
+        public Int32 EntryStoryBlockId; // 入口剧情ID
+
+        public String SetupSceneName; // 场景
+
+        public List<ActorBornInfo> ActorBornInfos= new List<ActorBornInfo>(); // actor出生信息 actorid,出生点
+
+    }
+
+
+    public partial class ConfigDataStoryBlockInfo
+    {
+
+        public Int32 ID; // 主键
+
+        public String JsonInfo; // 名称
+
+        public List<int> CommandIdList= new List<int>(); // 命令id列表
+
+        public List<String> OptionIdList= new List<String>(); // 描述
+
+    }
+
+
+    public partial class ConfigDataStoryCommandInfo
+    {
+
+        public Int32 ID; // 主键
+
+        public String CommandId; // 命令类型
+
+        public String ParamString; // 命令参数
+
+        public List<int> ParamInts= new List<int>(); // 整型命令参数
 
     }
 
