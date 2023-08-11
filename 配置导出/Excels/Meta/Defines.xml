@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Root>
-  <Enum name="EnumCardType">
-      <Action key="1" />
-      <Strategy key="2" />
+  <Subtype name="ActorBornInfo">
+    <p name="ActorId" type="int" comment="" />
+    <p name="BornPoint" type="string" comment="" />
+  </Subtype>
+  <Enum name="Sample">
+    <p key="1" />
   </Enum>
 </Root>

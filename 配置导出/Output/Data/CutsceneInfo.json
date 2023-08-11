@@ -1,0 +1,13 @@
+{
+  "100": {
+    "ID": 100,
+    "EntryStoryBlockId": 10000,
+    "SetupSceneName": "Assets/Scenes/Cutscene_01.unity",
+    "ActorBornInfos": [
+      {
+        "ActorId": 999,
+        "BornPoint": "init_999"
+      }
+    ]
+  }
+}
