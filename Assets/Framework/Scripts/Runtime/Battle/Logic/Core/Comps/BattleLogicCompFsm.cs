@@ -57,12 +57,7 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
 
-            // 装配状态切换回调
-            m_stateEnterCbDict.Clear();
-            m_stateEnterCbDict[BattleMainState.Starting] = OnStateEnter_Starting;
-            m_stateEnterCbDict[BattleMainState.Running] = OnStateEnter_Running;
-            m_stateEnterCbDict[BattleMainState.Ending] = OnStateEnter_Ending;
-            m_stateEnterCbDict[BattleMainState.Closed] = OnStateEnter_Closed;
+            
 
             StateGoto(BattleMainState.Init);
 
@@ -132,47 +127,11 @@ namespace My.Framework.Battle.Logic
             m_currState = BattleMainState.Closed;
         }
 
-        /// <summary>
-        /// 状态
-        /// </summary>
-        public enum BattleMainState
-        {
-            Init = 0, // 无效状态 初始化
+        
 
-            Starting,
+        
 
-            Running,
-
-            Ending,
-            
-            Closed,
-        }
-
-        /// <summary>
-        /// 切换到指定状态
-        /// </summary>
-        /// <param name="enterState"></param>
-        protected void StateGoto(BattleMainState enterState)
-        {
-            // 1. 设置当前状态
-            m_currState = enterState;
-
-            // 2. 调用state的enter流程
-            StateEnter(m_currState);
-        }
-
-        /// <summary>
-        /// 状态进入
-        /// </summary>
-        /// <param name="enterState"></param>
-        protected void StateEnter(BattleMainState enterState)
-        {
-            // 触发回调
-            if (m_stateEnterCbDict.ContainsKey(enterState))
-            {
-                m_stateEnterCbDict[enterState]?.Invoke();
-            }
-        }
+        
 
 
         /// <summary>
@@ -185,67 +144,15 @@ namespace My.Framework.Battle.Logic
 
         #region 状态切换函数
 
-        /// <summary>
-        /// 切换状态 starting
-        /// </summary>
-        protected virtual void OnStateEnter_Starting()
-        {
-            // 推入process
-            m_compProcessManager.PushProcessToCache(new BattleShowProcess_Print("Now Battle Start Yeah."));
-
-            // 触发效果
-            m_compResolver.TriggerResolve(new TriggerNodeBattleStart());
-            EventOnBattleStateStarting?.Invoke();
-
-            // 显示层表现
-            m_compProcessManager.FlushAndRaiseEvent();
-        }
-
-        /// <summary>
-        /// 切换状态 running
-        /// </summary>
-        protected virtual void OnStateEnter_Running()
-        {
-            // handle process
-            // 
-            EventOnBattleStateRunning?.Invoke();
-        }
-
-        protected virtual void OnStateEnter_Ending()
-        {
-            // handle process
-
-            // 
-            EventOnBattleStateEnding?.Invoke();
-
-            // 显示层表现
-            m_compProcessManager.FlushAndRaiseEvent();
-        }
-
-        protected virtual void OnStateEnter_Closed()
-        {
-            // 抛出事件
-            EventOnBattleEnd?.Invoke("nmsl");
-
-            // 显示层表现
-            m_compProcessManager.FlushAndRaiseEvent();
-        }
 
         #endregion
 
         #region 事件
 
 
-        /// <summary>
-        /// 状态切换字典
-        /// </summary>
-        protected Dictionary<BattleMainState, Action> m_stateEnterCbDict =
-            new Dictionary<BattleMainState, Action>();
+        
 
-        // 状态切换函数
-        public event Action EventOnBattleStateStarting;
-        public event Action EventOnBattleStateRunning;
-        public event Action EventOnBattleStateEnding;
+        
 
         /// <summary>
         /// 战斗 结束事件
@@ -259,10 +166,7 @@ namespace My.Framework.Battle.Logic
 
         #endregion
 
-        /// <summary>
-        /// 当前的状态
-        /// </summary>
-        protected BattleMainState m_currState;
+        
 
         /// <summary>
         /// 表现组件
