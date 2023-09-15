@@ -21,12 +21,13 @@ namespace My.Framework.Runtime.UI
         /// <summary>
         /// 完成绑定回调
         /// </summary>
+        /// 
         protected override void OnBindFiledsCompleted()
         {
             base.OnBindFiledsCompleted();
 
-            SetButtonClickListener("m_newGameButton", OnNewGameButtonClick);
-            SetButtonClickListener("m_oldGameButton", OnOldGameButtonClick);
+            SetButtonClickListener(nameof(m_enterButton), OnNewGameButtonClick);
+            SetButtonClickListener(nameof(m_exitButton), OnOldGameButtonClick);
 
             m_savingPanel.BindFields();
             m_savingPanel.gameObject.SetActive(false);

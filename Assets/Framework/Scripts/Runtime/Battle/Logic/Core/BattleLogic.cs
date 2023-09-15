@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Actor;
 
 namespace My.Framework.Battle.Logic
 {
@@ -20,8 +21,9 @@ namespace My.Framework.Battle.Logic
     }
 
     public interface IBattleLogic : 
-        IBattleMainCompFSM,
-        IBattleLogicCompMain
+        IBattleLogicCompMain,
+        IBattleLogicCompActorContainer,
+        IBattleLogicCompTurnManager
     {
 
     }
@@ -73,7 +75,10 @@ namespace My.Framework.Battle.Logic
             Rebuilder = new BattleLogicCompRebuilder(this, null);
             m_compList.Add(CompProcessManager);
 
-            foreach(var comp in m_compList)
+            CompTurnManager = new BattleLogicCompTurnManager(this);
+            m_compList.Add(CompProcessManager);
+
+            foreach (var comp in m_compList)
             {
                 m_compNameDict[comp.CompName] = comp;
                 if(!comp.Initialize())
@@ -143,6 +148,15 @@ namespace My.Framework.Battle.Logic
             return FakeBattleConfig;
         }
 
+        /// <summary>
+        /// 获取初始化信息
+        /// </summary>
+        /// <returns></returns>
+        public BattleInitInfoBase BattleInitInfoGet()
+        {
+            return m_initInfo;
+        }
+
 
         #region 转发方法
 
@@ -172,8 +186,8 @@ namespace My.Framework.Battle.Logic
 
         public BattleLogicCompRuler CompRuler;
 
-        public BattleLogicCompFsm CompFSM;
-
+        public BattleLogicCompTurnManager CompTurnManager;
+        
         public BattleLogicCompActorContainer CompActorContainer;
 
         #endregion
@@ -203,6 +217,54 @@ namespace My.Framework.Battle.Logic
         /// </summary>
         public FakeBattleConfig FakeBattleConfig = FakeBattleConfig.GetFake();
 
-        
+
+        #region Implementation of IBattleLogicCompActorContainer
+
+        /// <summary>
+        /// 新建actor
+        /// </summary>
+        /// <param name="configId"></param>
+        /// <param name="actorType"></param>
+        /// <param name="actorId"></param>
+        /// <returns></returns>
+        public BattleActor CreateActor(int actorType, int configId, BattleActorSourceType sourceType, int campId, uint actorId = 0)
+        {
+            return CompActorContainer.CreateActor(actorType, configId, sourceType, campId, actorId);
+        }
+
+        /// <summary>
+        /// 获取指定actor
+        /// </summary>
+        /// <param name="actorId"></param>
+        /// <returns></returns>
+        public BattleActor GetActor(uint actorId)
+        {
+            return CompActorContainer.GetActor(actorId);
+        }
+
+        /// <summary>
+        /// 获取某一阵营所有actor
+        /// </summary>
+        /// <param name="campId"></param>
+        /// <returns></returns>
+        public IEnumerable<BattleActor> GetActorsByCamp(int campId)
+        {
+            return CompActorContainer.GetActorsByCamp(campId);
+        }
+
+        #endregion
+
+        #region Implementation of IBattleLogicCompTurnManager
+
+        /// <summary>
+        /// 获取当前行动中的controller
+        /// </summary>
+        /// <returns></returns>
+        public BattleController CurrTurnActionController()
+        {
+            return CompTurnManager.CurrTurnActionController();
+        }
+
+        #endregion
     }
 }

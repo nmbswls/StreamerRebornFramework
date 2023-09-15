@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 
 namespace My.Framework.Battle.Actor
 {
-    public enum EnumTriggerType
+    public enum EnumBuffTriggerType
     {
         Invalid,
         BattleStart,
         AddBuff,
         CauseDamage,
-        OwnerLayerReach, 
+        OwnerLayerReach,
+        BeforeCast,
+        TurnStart,
+        TurnEnd,
     }
 
     public interface IBattleActorBuffTriggerEnv
@@ -33,7 +36,7 @@ namespace My.Framework.Battle.Actor
 
         #region Fake Config
 
-        public EnumTriggerType TriggerType;
+        public EnumBuffTriggerType TriggerType;
 
         public List<int> TriggerActionList = new List<int>();
 
@@ -43,7 +46,7 @@ namespace My.Framework.Battle.Actor
         /// 尝试触发
         /// </summary>
         /// <returns></returns>
-        public virtual bool CheckTrigger(EnumTriggerType triggerType, params object[] paramList)
+        public virtual bool CheckTrigger(EnumBuffTriggerType triggerType, params object[] paramList)
         {
             if (!CheckCommon())
             {
@@ -67,7 +70,7 @@ namespace My.Framework.Battle.Actor
         /// </summary>
         protected virtual void OnTrigger()
         {
-
+            //Owner.CompResolver.TriggerResolve
         }
 
         #region 事件转接

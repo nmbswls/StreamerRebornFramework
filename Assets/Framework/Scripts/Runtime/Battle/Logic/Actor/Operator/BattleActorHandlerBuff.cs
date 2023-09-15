@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Logic;
 using Unity.VisualScripting;
 
 namespace My.Framework.Battle.Actor
@@ -14,6 +15,13 @@ namespace My.Framework.Battle.Actor
         /// 增加buf
         /// </summary>
         void AddBuff(int buffId, int layer = 1);
+
+        /// <summary>
+        /// 执行触发buff
+        /// </summary>
+        /// <param name="triggerType"></param>
+        /// <param name="paramList"></param>
+        void OnTrigger(EnumBuffTriggerType triggerType, params object[] paramList);
     }
 
 
@@ -78,8 +86,11 @@ namespace My.Framework.Battle.Actor
             }
 
             targetBuff.OnAddOrModified();
-            targetBuff.OnTrigger(EnumTriggerType.OwnerLayerReach);
+            targetBuff.OnTrigger(EnumBuffTriggerType.OwnerLayerReach);
             m_env.PushProcessAndFlush(new BattleShowProcess_Announce(m_env.GetActorId(), 0.5f));
+
+            // 进行触发
+            OnTrigger(EnumBuffTriggerType.AddBuff, buffId);
         }
 
 
@@ -88,37 +99,50 @@ namespace My.Framework.Battle.Actor
         #region 事件
 
         /// <summary>
+        /// 执行触发buff
+        /// </summary>
+        /// <param name="triggerType"></param>
+        /// <param name="paramList"></param>
+        public void OnTrigger(EnumBuffTriggerType triggerType, params object[] paramList)
+        {
+            foreach (var buff in m_compBuff.BuffList)
+            {
+                buff.OnTrigger(triggerType);
+            }
+        }
+
+        /// <summary>
         /// 触发事件调用
         /// </summary>
         /// <param name="logicEvent"></param>
         void ILogicEventListener.OnEvent(LogicEvent logicEvent)
         {
-            switch (logicEvent.m_eventId)
-            {
-                case EventIDConsts.BattleStart:
-                {
-                    foreach (var buff in m_compBuff.BuffList)
-                    {
-                        buff.OnTrigger(EnumTriggerType.BattleStart);
-                    }
+            //switch (logicEvent.m_eventId)
+            //{
+            //    case EventIDConsts.BattleStart:
+            //    {
+            //        foreach (var buff in m_compBuff.BuffList)
+            //        {
+            //            buff.OnTrigger(EnumTriggerType.BattleStart);
+            //        }
                     
-                    break;
-                }
-                case EventIDConsts.CauseDamage:
-                {
-                    var realEvent = (LogicEventCauseDamage) logicEvent;
-                    foreach (var buff in m_compBuff.BuffList)
-                    {
-                        buff.OnTrigger(EnumTriggerType.BattleStart, realEvent.m_sourceId, realEvent.m_targetId, realEvent.m_damage, realEvent.m_realDamage);
-                    }
-                    break;
-                }
-            }
+            //        break;
+            //    }
+            //    case EventIDConsts.CauseDamage:
+            //    {
+            //        var realEvent = (LogicEventCauseDamage) logicEvent;
+            //        foreach (var buff in m_compBuff.BuffList)
+            //        {
+            //            buff.OnTrigger(EnumTriggerType.BattleStart, realEvent.m_sourceId, realEvent.m_targetId, realEvent.m_damage, realEvent.m_realDamage);
+            //        }
+            //        break;
+            //    }
+            //}
         }
 
 
-        protected Dictionary<EnumTriggerType, List<BattleActorBuff>> m_triggerType2Buffs =
-            new Dictionary<EnumTriggerType, List<BattleActorBuff>>();
+        protected Dictionary<EnumBuffTriggerType, List<BattleActorBuff>> m_triggerType2Buffs =
+            new Dictionary<EnumBuffTriggerType, List<BattleActorBuff>>();
 
         #endregion
 
@@ -131,6 +155,15 @@ namespace My.Framework.Battle.Actor
         public IBattleActor GetOwner()
         {
             return m_env as IBattleActor;
+        }
+
+        /// <summary>
+        /// 获取结算器
+        /// </summary>
+        /// <returns></returns>
+        public IBattleLogicResolver GetResolver()
+        {
+            return m_env.GetResolver();
         }
 
         #endregion

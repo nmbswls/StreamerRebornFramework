@@ -20,10 +20,10 @@ namespace My.Framework.Battle.Actor
         void PushProcessAndFlush(BattleShowProcess process);
 
         /// <summary>
-        /// 获取当前结算现场
+        /// 获取结算器
         /// </summary>
         /// <returns></returns>
-        BattleResolveContext GetResolveContext();
+        IBattleLogicResolver GetResolver();
     }
 
     public interface IBattleActorCompProvider
@@ -49,7 +49,10 @@ namespace My.Framework.Battle.Actor
         IBattleActorHandlerSkill,
         IBattleActorHandlerBuff
     {
-
+        /// <summary>
+        /// actor id
+        /// </summary>
+        uint ActorId { get; }
     }
 
     public partial class BattleActor : IBattleActor, IBattleActorCompProvider, IBattleActorOperatorEnv
@@ -259,6 +262,15 @@ namespace My.Framework.Battle.Actor
             return m_actorId;
         }
 
+        /// <summary>
+        /// 获取当前结算现场
+        /// </summary>
+        /// <returns></returns>
+        public IBattleLogicResolver GetResolver()
+        {
+            return m_env.GetResolver();
+        }
+
         #endregion
 
         #region 获取
@@ -346,6 +358,15 @@ namespace My.Framework.Battle.Actor
             return m_handlerSkill.UseSkill(skillId);
         }
 
+        /// <summary>
+        /// 是否正在使用技能
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAnySkillflowRunninging()
+        {
+            return m_handlerSkill.IsAnySkillflowRunninging();
+        }
+
         #region Implementation of IBattleActorHandlerBuff
 
         /// <summary>
@@ -354,6 +375,16 @@ namespace My.Framework.Battle.Actor
         public void AddBuff(int buffId, int layer = 1)
         {
             m_handlerBuff.AddBuff(buffId, layer);
+        }
+
+        /// <summary>
+        /// 执行触发buff
+        /// </summary>
+        /// <param name="triggerType"></param>
+        /// <param name="paramList"></param>
+        public void OnTrigger(EnumBuffTriggerType triggerType, params object[] paramList)
+        {
+            m_handlerBuff.OnTrigger(triggerType, paramList);
         }
 
         #endregion

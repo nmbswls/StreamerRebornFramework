@@ -22,6 +22,12 @@ namespace My.Framework.Battle.Logic
         /// </summary>
         /// <returns></returns>
         FakeBattleConfig ConfigGet();
+
+        /// <summary>
+        /// 获取初始化信息
+        /// </summary>
+        /// <returns></returns>
+        BattleInitInfoBase BattleInitInfoGet();
     }
     
     /// <summary>

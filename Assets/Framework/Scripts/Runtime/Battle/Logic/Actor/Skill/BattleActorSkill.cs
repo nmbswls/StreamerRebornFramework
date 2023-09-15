@@ -3,11 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Logic;
 
 namespace My.Framework.Battle.Actor
 {
     public class BattleActorSkill
     {
+        /// <summary>
+        /// 技能id
+        /// </summary>
+        public int SkillId;
+
+        /// <summary>
+        /// 技能状态
+        /// </summary>
+        public float CoolDown;
+
         /// <summary>
         /// 是否是被动技能
         /// </summary>
@@ -16,7 +27,25 @@ namespace My.Framework.Battle.Actor
         {
             return false;
         }
-        
+
+        public virtual void OnSkillPreCast(IBattleLogicResolver resolver)
+        {
+            // 施加pre的各种效果
+            var ctx = resolver.OpenResolveCtx(EnumTriggereSourceType.BeforeCast);
+        }
+
+        /// <summary>
+        /// 释放开始
+        /// </summary>
+        public virtual void OnSkillCast(IBattleLogicResolver resolver)
+        {
+            var ctx = resolver.OpenResolveCtx(EnumTriggereSourceType.OnCast);
+        }
+
+        public virtual void OnSkillPostCast(IBattleLogicResolver resolver)
+        {
+            var ctx = resolver.OpenResolveCtx(EnumTriggereSourceType.PostCast);
+        }
     }
 
     public class BattleActorSkillPassive : BattleActorSkill

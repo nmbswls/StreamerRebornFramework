@@ -33,6 +33,23 @@ namespace My.Framework.Runtime.Logic
     /// </summary>
     public class DataContainer4Battle : DataContainerBase, IDataContainerBattle
     {
+        /// <summary>
+        /// 使用存档数据进行初始化
+        /// </summary>
+        /// <param name="dataSource"></param>
+        public override void InitData(IDataSourceBase dataSource)
+        {
+            var realDataSource = (IDataSourceSimple) dataSource;
+            if (dataSource != null)
+            {
+                m_dataBlock = realDataSource.GetBattleDataBlock();
+            }
+            else
+            {
+                m_dataBlock = new BattleDataBlock();
+            }
+        }
+
 
         public override string Name
         {
@@ -58,7 +75,4 @@ namespace My.Framework.Runtime.Logic
 
         public BattleDataBlock m_dataBlock;
     }
-
-    
-
 }

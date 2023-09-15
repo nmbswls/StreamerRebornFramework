@@ -14,6 +14,16 @@ namespace My.Framework.Runtime.Saving
     /// </summary>
     public class SavingData : IDataSourceBase
     {
-        public string BattleData;
+        public BattleDataBlock BattleData;
+
+
+        #region Implementation of IDataSourceBase
+
+        public BattleDataBlock GetBattleDataBlock()
+        {
+            return BattleData;
+        }
+
+        #endregion
     }
 }

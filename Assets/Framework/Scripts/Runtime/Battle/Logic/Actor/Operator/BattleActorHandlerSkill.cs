@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Logic;
 using Unity.VisualScripting;
+using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace My.Framework.Battle.Actor
@@ -22,6 +24,12 @@ namespace My.Framework.Battle.Actor
         /// </summary>
         /// <returns></returns>
         bool UseSkill(int skillId);
+
+        /// <summary>
+        /// 是否正在使用技能
+        /// </summary>
+        /// <returns></returns>
+        bool IsAnySkillflowRunninging();
     }
 
 
@@ -61,6 +69,31 @@ namespace My.Framework.Battle.Actor
             return true;
         }
 
+        #region Overrides of BattleActorHandlerBase
+
+        /// <summary>
+        /// tick
+        /// </summary>
+        /// <param name="currTime"></param>
+        public override void Tick(uint currTime)
+        {
+            foreach (var runflow in m_runningSkillRunflowList)
+            {
+                runflow.Tick();
+            }
+
+            // 清理执行完毕的现场
+            for (int i = m_runningSkillRunflowList.Count - 1; i >= 0; i--)
+            {
+                m_runningSkillRunflowList[i].Tick();
+                if (m_runningSkillRunflowList[i].Step == BattleActorSkillRunflow.PhaseStep.Finish)
+                {
+                    m_runningSkillRunflowList.RemoveAt(i);
+                }
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -81,7 +114,49 @@ namespace My.Framework.Battle.Actor
         /// <returns></returns>
         public bool UseSkill(int skillId)
         {
+            Debug.Log($"UseSkill {skillId}");
+            
+            // 二次校验是否可以使用
+            if (!CanUseSkill(skillId))
+            {
+                return false;
+            }
+            
+            // 获取skill
+            var runflow = new BattleActorSkillRunflow();
+            runflow.InnerSkill = m_compSkill.SkillList[skillId];
+
+            runflow.Start();
+            m_runningSkillRunflowList.Add(runflow);
+
             return true;
+        }
+
+        /// <summary>
+        /// 是否正在使用技能
+        /// </summary>
+        /// <returns></returns>
+        public bool IsAnySkillflowRunninging()
+        {
+            return m_runningSkillRunflowList.Count != 0;
+        }
+
+        /// <summary>
+        /// 获取resolver
+        /// </summary>
+        /// <returns></returns>
+        public IBattleLogicResolver GetResolver()
+        {
+            return m_env.GetResolver();
+        }
+
+        /// <summary>
+        /// 获取拥有者
+        /// </summary>
+        /// <returns></returns>
+        public IBattleActor GetActor()
+        {
+            return m_env as IBattleActor;
         }
 
         #endregion
@@ -95,9 +170,10 @@ namespace My.Framework.Battle.Actor
         /// <param name="skill"></param>
         protected void AddPassiveSkill(BattleActorSkillPassive skill)
         {
-            int buff = skill.GetPassiveBuff();
-            m_handlerBuff.AddBuff(buff, 1);
+            int buffId = skill.GetPassiveBuff();
+            m_handlerBuff.AddBuff( buffId, 1);
         }
+
 
         #endregion
 
@@ -119,6 +195,15 @@ namespace My.Framework.Battle.Actor
 
         #endregion
 
-        
+        #region 内部变量
+
+        /// <summary>
+        /// 正在进行的技能执行流
+        /// 回合制应当只有一个
+        /// </summary>
+        protected List<BattleActorSkillRunflow> m_runningSkillRunflowList = new List<BattleActorSkillRunflow>();
+
+        #endregion
+
     }
 }

@@ -1,6 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using My.Framework.Battle;
+using My.Framework.Battle.Actor;
+using My.Framework.Battle.Logic;
+using My.Framework.Battle.View;
 using My.Framework.Runtime.Saving;
 using UnityEngine;
 
@@ -18,7 +22,7 @@ namespace My.Framework.Runtime.UI
         private static UIControllerBattleStartup m_instance;
         public static void StartUITask(Action<bool> onEnd)
         {
-            UIIntent uiIntent = new UIIntent(typeof(UIControllerBattleStartup).Name);
+            UIIntent uiIntent = new UIIntent("BattleStartup");
             m_instance = UIManager.Instance.StartUIController(uiIntent, false, onEnd) as UIControllerBattleStartup;
         }
 
@@ -29,6 +33,14 @@ namespace My.Framework.Runtime.UI
             if (m_uiCompArray.Length > 0 && m_compMain == null)
             {
                 m_compMain = m_uiCompArray[0] as UIComponentBattleMainStartup;
+                m_compMain.EventOnFakeUseSkill += () =>
+                {
+                    BattleManager.Instance.BattleLogic.InputOpt(new BattleOpt(){m_type = BattleOptType.SkillCast, m_controllerId = 1});
+                };
+                m_compMain.EventOnFakeEndTurn += () =>
+                {
+                    BattleManager.Instance.BattleLogic.InputOpt(new BattleOpt() { m_type = BattleOptType.EndTurn, m_controllerId = 1 });
+                };
             }
             if (m_uiCompArray.Length > 1 && m_compMain == null)
             {
@@ -38,6 +50,9 @@ namespace My.Framework.Runtime.UI
             {
                 m_compOther = m_uiCompArray[2] as UIComponentBattleOtherStartup;
             }
+
+            // 注册事件
+            BattleManager.Instance.BattleEventDispatcher.RegisterListener<EffectNode>(BattleEventIds.EffectNodeHandled, OnEffectNodeHandled);
         }
 
         protected override void OnTick(float dt)
@@ -54,6 +69,32 @@ namespace My.Framework.Runtime.UI
         {
             //EventManager.Instance.RegisterListener(EventID.BattleMessage_MainBattleStart, EventOnBattleStart);
         }
+
+        #region 事件监听
+
+        /// <summary>
+        /// 监听下层处理节点事件
+        /// </summary>
+        /// <param name="effectNode"></param>
+        public void OnEffectNodeHandled(EffectNode effectNode)
+        {
+            switch (effectNode.EffectType)
+            {
+                case BattleEffectType.ChooseCard:
+                {
+                    var realNode = (EffectNodeChooseCard) effectNode;
+                    m_compMain.ShowChoosePanel((idx) =>
+                    {
+                        Debug.Log("xuanze le");
+                        realNode.ChoosedIdx = idx;
+                        realNode.IsDataReady = true;
+                    });
+                }
+                    break;
+            }
+        }
+
+        #endregion
 
         #region 点击事件
 
@@ -82,7 +123,7 @@ namespace My.Framework.Runtime.UI
             new LayerDesc
             {
                 m_layerName = "BattleFloating",
-                m_layerResPath = "Assets/Framework/Resources/UI/Preset/BattleStartup.prefab",
+                m_layerResPath = "Assets/Framework/Resources/UI/Preset/BattleFloating.prefab",
             },
         };
         protected override UIComponentDesc[] UIComponentDescArray
@@ -108,7 +149,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "BattleMain",
-                m_attachPath = "./Root/MainRoot/WithdrawRoot",
+                m_attachPath = "./Root/OtherRoot",
                 m_compTypeName = typeof(UIComponentBattleOtherStartup).ToString(),
                 m_compName = "BattleOther"
             },

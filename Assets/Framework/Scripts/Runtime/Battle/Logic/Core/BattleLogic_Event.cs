@@ -24,6 +24,12 @@ namespace My.Framework.Battle.Logic
         /// </summary>
         /// <param name="processList"></param>
         void OnFlushProcess(List<BattleShowProcess> processList);
+
+        /// <summary>
+        /// 通知上层 效果被handle
+        /// </summary>
+        /// <param name="effectNode"></param>
+        void OnEffectNodeHandled(EffectNode effectNode);
     }
 
     public partial class BattleLogic
@@ -50,9 +56,10 @@ namespace My.Framework.Battle.Logic
 
         protected void RegEvent4Dispatch()
         {
-            CompFSM.EventOnBattleEnd += FireEventOnBattleEnd;
+            CompMain.EventOnBattleStateClosed += FireEventOnBattleEnd;
 
             CompProcessManager.EventOnProcessFlush += FireEventOnFlushProcess;
+            CompResolver.EventOnEffectNodeHandled += FireEventOnEffectNodeHandled;
         }
 
         #endregion
@@ -63,12 +70,11 @@ namespace My.Framework.Battle.Logic
         /// <summary>
         /// 通知上层 战斗结束
         /// </summary>
-        /// <param name="resultInfo"></param>
-        protected void FireEventOnBattleEnd(string resultInfo)
+        protected void FireEventOnBattleEnd()
         {
             foreach (var listener in m_battleLogicEventListenerList)
             {
-                listener.OnBattleEnd(resultInfo);
+                listener.OnBattleEnd("");
             }
         }
 
@@ -89,6 +95,20 @@ namespace My.Framework.Battle.Logic
                 listener.OnFlushProcess(processList);
             }
         }
+
+        /// <summary>
+        /// 通知上层 效果被handle
+        /// </summary>
+        /// <param name="effectNode"></param>
+        protected void FireEventOnEffectNodeHandled(EffectNode effectNode)
+        {
+            Debug.Log($"FireEventOnEffectNodeHandled effectNode:{effectNode}");
+            foreach (var listener in m_battleLogicEventListenerList)
+            {
+                listener.OnEffectNodeHandled(effectNode);
+            }
+        }
+        
 
 
         #endregion

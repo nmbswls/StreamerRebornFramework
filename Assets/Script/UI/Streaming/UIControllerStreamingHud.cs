@@ -6,9 +6,9 @@ using UnityEngine.EventSystems;
 
 namespace StreamerReborn
 {
-    public class UIControllerBattleHud : UIControllerBase
+    public class UIControllerStreamingHud : UIControllerBase
     {
-        public UIControllerBattleHud(string name) : base(name)
+        public UIControllerStreamingHud(string name) : base(name)
         {
         }
 
@@ -16,19 +16,19 @@ namespace StreamerReborn
         /// 包装参数
         /// </summary>
         /// <returns></returns>
-        public static UIControllerBattleHud Create()
+        public static UIControllerStreamingHud Create()
         {
             var intent = new UIIntent("BattleHud");
-            return UIManager.Instance.StartUIController(intent) as UIControllerBattleHud;
+            return UIManager.Instance.StartUIController(intent) as UIControllerStreamingHud;
         }
 
         /// <summary>
         /// 获取当前
         /// </summary>
         /// <returns></returns>
-        public static UIControllerBattleHud GetCurrentHud()
+        public static UIControllerStreamingHud GetCurrentHud()
         {
-            return UIManager.Instance.FindUIControllerByName("BattleHud") as UIControllerBattleHud;
+            return UIManager.Instance.FindUIControllerByName("BattleHud") as UIControllerStreamingHud;
         }
 
         protected override void RefreshView()
@@ -39,7 +39,7 @@ namespace StreamerReborn
         protected override void InitAllUIComponents()
         {
             base.InitAllUIComponents();
-            m_compHud = m_uiCompArray[0] as UIComponentBattleHud;
+            m_compHud = m_uiCompArray[0] as UIComponentStreamingHud;
         }
 
 
@@ -85,23 +85,14 @@ namespace StreamerReborn
             }
         }
         private List<RaycastResult> m_cacheRaycastList = new List<RaycastResult>();
-        #region 观众接口
+        
 
-        /// <summary>
-        /// 添加观众
-        /// </summary>
-        public void AddAudience()
-        {
-            m_compHud.m_audienceContainer.TempAddAudience();
-        }
-
-        #endregion
 
 
         /// <summary>
         /// 主component
         /// </summary>
-        public UIComponentBattleHud m_compHud;
+        public UIComponentStreamingHud m_compHud;
 
         #region 装配信息
 
@@ -127,7 +118,7 @@ namespace StreamerReborn
             {
                 m_attachLayerName = "BattleHud",
                 m_attachPath = "./",
-                m_compTypeName = typeof(UIComponentBattleHud).ToString(),
+                m_compTypeName = typeof(UIComponentStreamingHud).ToString(),
                 m_compName = "BattleHud"
             },
         };

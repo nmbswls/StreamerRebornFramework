@@ -3,33 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Actor;
 using My.Framework.Battle.Logic;
 using UnityEngine;
 
 namespace My.Framework.Battle
 {
 
-    public interface IBattleControllerEnv
-    {
-        /// <summary>
-        /// Push战斗指令
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <returns></returns>
-        bool OptPush(BattleOpt cmd);
+    //public interface IBattleControllerEnv
+    //{
+    //    /// <summary>
+    //    /// Push战斗指令
+    //    /// </summary>
+    //    /// <param name="cmd"></param>
+    //    /// <returns></returns>
+    //    bool OptPush(BattleOpt cmd);
 
-        /// <summary>
-        /// OptSeq生成
-        /// </summary>
-        /// <returns></returns>
-        int OptSeqAlloc();
-    }
+    //    /// <summary>
+    //    /// OptSeq生成
+    //    /// </summary>
+    //    /// <returns></returns>
+    //    int OptSeqAlloc();
+    //}
     
     public partial class BattleController : IBattleControllerInput
     {
-        protected BattleController(IBattleControllerEnv env)
+        protected BattleController()
         {
-            m_env = env;
+            //m_env = env;
         }
 
         public virtual void Tick(float dt)
@@ -168,16 +169,18 @@ namespace My.Framework.Battle
 
         #endregion
 
-        public BattleLogic Owner;
-        public IBattleControllerEnv m_env;
+        
 
-        public int ControllerId;
         public void DoTurnStart()
         {
             // 触发类效果
-            Owner.CompResolver.TriggerResolve(
-                new TriggerNodeTurnStart() { ControllerId = ControllerId }
-            );
+            Owner.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnStart);
+
+            foreach (var actor in Owner.GetActorsByCamp(ControllerId))
+            {
+                actor.OnTrigger(EnumBuffTriggerType.TurnStart);
+            }
+            Owner.CompResolver.TickResolve();
 
             TurnActionStateGoto(TurnActionState.TurnActionStart);
         }
@@ -188,9 +191,13 @@ namespace My.Framework.Battle
         public void DoTurnEnd()
         {
             // 触发类效果
-            Owner.CompResolver.TriggerResolve(
-                new TriggerNodeTurnEnd() { ControllerId = ControllerId }
-            );
+            Owner.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnEnd);
+
+            foreach (var actor in Owner.GetActorsByCamp(ControllerId))
+            {
+                actor.OnTrigger(EnumBuffTriggerType.TurnEnd);
+            }
+            Owner.CompResolver.TickResolve();
 
             // 切换状态
             TurnActionStateGoto(TurnActionState.TurnActionEnd);
@@ -246,8 +253,6 @@ namespace My.Framework.Battle
 
         #endregion
 
-
-
         #region 组件
 
         /// <summary>
@@ -264,6 +269,23 @@ namespace My.Framework.Battle
         /// </summary>
         protected bool m_flagAuto = false;
         public bool FlagAuto { get { return m_flagAuto; } }
+
+        #endregion
+
+        #region 内部变量
+
+        public BattleLogic Owner;
+        //public IBattleControllerEnv m_env;
+
+        /// <summary>
+        /// 动态的controllerId
+        /// </summary>
+        protected int m_controllerId;
+
+        public virtual int ControllerId
+        {
+            get { return m_controllerId; }
+        }
 
         #endregion
     }

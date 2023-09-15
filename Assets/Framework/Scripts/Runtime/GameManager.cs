@@ -126,7 +126,10 @@ namespace My.Framework.Runtime
             }
 
             // TODO 移动到统一tick入口中
-            BattleManager.Instance.OnTick(Time.deltaTime);
+            if (m_isInBattle)
+            {
+                BattleManager.Instance.OnTick(Time.deltaTime);
+            }
         }
 
         /// <summary>
@@ -144,7 +147,6 @@ namespace My.Framework.Runtime
         public void LoadGame(int savingIdx)
         {
             
-
             // 切换状态
             m_gameWorld.EnterHall();
         }
@@ -249,6 +251,7 @@ namespace My.Framework.Runtime
         #region 战斗等子模式
 
         
+        
 
         #endregion
 
@@ -321,8 +324,6 @@ namespace My.Framework.Runtime
         /// 多语言
         /// </summary>
         public string m_currLocalization;
-
-
     }
 
 }

@@ -20,6 +20,8 @@ namespace My.Framework.Runtime
             BattleManager.CreateInstance();
             BattleManager.Instance.StartBattle(1);
             BattleManager.Instance.EventOnBattleEnd += OnBattleEnd;
+
+            m_isInBattle = true;
         }
 
         /// <summary>
@@ -32,6 +34,12 @@ namespace My.Framework.Runtime
             UIControllerLoading.ShowLoadingUI(1, "nmsl", () => {
                 GameManager.Instance.GameWorld.EnterHall();
             });
+            m_isInBattle = false;
         }
+
+        /// <summary>
+        /// 战斗标记位
+        /// </summary>
+        protected bool m_isInBattle;
     }
 }

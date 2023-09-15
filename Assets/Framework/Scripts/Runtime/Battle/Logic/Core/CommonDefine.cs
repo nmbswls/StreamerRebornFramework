@@ -29,6 +29,18 @@ namespace My.Framework.Battle
     }
 
     /// <summary>
+    /// 玩家相关初始信息
+    /// </summary>
+    public class BattleInitInfoPlayerBase
+    {
+        /// <summary>
+        /// 控制者Id
+        /// </summary>
+        public int m_controllerId;
+
+    }
+
+    /// <summary>
     /// 战斗额外初始化信息
     /// </summary>
     public class BattleInitInfoBase
@@ -43,6 +55,10 @@ namespace My.Framework.Battle
         /// </summary>
         public List<uint> m_acterList = new List<uint>();
 
+        /// <summary>
+        /// 玩家初始信息
+        /// </summary>
+        public BattleInitInfoPlayerBase m_playerInitInfo;
 
         #region Overrides of Object
 

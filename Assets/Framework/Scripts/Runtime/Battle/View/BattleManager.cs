@@ -15,9 +15,9 @@ namespace My.Framework.Battle.View
     /// </summary>
     public class BattleManager : Singleton<BattleManager>
     {
-
         protected override void Init()
         {
+            m_battleLoader = CreateBattleLoader();
             RegisterListener();
         }
 
@@ -28,7 +28,7 @@ namespace My.Framework.Battle.View
 
         public void OnTick(float deltaTime)
         {
-            if (m_isErrorOccured)
+            if (!m_isRunning || m_isErrorOccured)
             {
                 return;
             }
@@ -89,9 +89,9 @@ namespace My.Framework.Battle.View
         /// 创建监听组件
         /// </summary>
         /// <returns></returns>
-        protected virtual BattleEventListenerView CreateEventListener()
+        protected virtual ViewBattleEventDispatcher CreateEventListener()
         {
-            return new BattleEventListenerView();
+            return new ViewBattleEventDispatcher();
         }
 
         /// <summary>
@@ -108,8 +108,8 @@ namespace My.Framework.Battle.View
         /// </summary>
         protected virtual void RegisterListener()
         {
-            m_eventListener.RegisterListener<string>(BattleEventIds.BattleEnd, OnBattleFinalize);
-            m_eventListener.RegisterListener<List<BattleShowProcess>>(BattleEventIds.FlushProcess, OnFlushProcess);
+            m_battleEventDispatcher.RegisterListener<string>(BattleEventIds.BattleEnd, OnBattleFinalize);
+            m_battleEventDispatcher.RegisterListener<List<BattleShowProcess>>(BattleEventIds.FlushProcess, OnFlushProcess);
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace My.Framework.Battle.View
         /// <param name="actionOnEnd"></param>
         protected void PostOpenBattle(Action actionOnEnd)
         {
-            m_eventListener.Init(BattleLogic);
+            m_battleEventDispatcher.Init(BattleLogic);
 
             if (!m_battleLoader.isComplete)
             {
@@ -200,11 +200,16 @@ namespace My.Framework.Battle.View
         /// <summary>
         /// 加载器
         /// </summary>
-        protected BattleLoader m_battleLoader;
+        protected BattleLoader m_battleLoader = new BattleLoader();
+
         /// <summary>
-        /// 监听逻辑事件
+        /// 显示层事件分发器 - 分发逻辑事件
         /// </summary>
-        protected BattleEventListenerView m_eventListener;
+        protected ViewBattleEventDispatcher m_battleEventDispatcher = new ViewBattleEventDispatcher();
+        public ViewBattleEventDispatcher BattleEventDispatcher
+        {
+            get { return m_battleEventDispatcher; }
+        }
 
         /// <summary>
         /// 场景控制器

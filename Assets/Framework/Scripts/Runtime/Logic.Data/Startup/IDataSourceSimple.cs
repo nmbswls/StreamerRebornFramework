@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace My.Framework.Runtime.Logic
 {
-    
     /// <summary>
     /// 基础数据源
     /// </summary>

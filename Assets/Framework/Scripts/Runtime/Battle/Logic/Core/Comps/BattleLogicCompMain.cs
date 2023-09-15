@@ -24,7 +24,10 @@ namespace My.Framework.Battle.Logic
         {
         }
 
-        public override string CompName { get; }
+        public override string CompName
+        {
+            get { return GamePlayerCompNames.Main; }
+        }
 
         #region 生命周期
 
@@ -58,6 +61,8 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
 
+            //创建controller
+            InitControllers();
 
             // 装配状态切换回调
             m_stateEnterCbDict.Clear();
@@ -85,7 +90,6 @@ namespace My.Framework.Battle.Logic
         #endregion
 
         #endregion
-
 
         #region 对外方法
 
@@ -218,7 +222,6 @@ namespace My.Framework.Battle.Logic
             m_compProcessManager.PushProcessToCache(new BattleShowProcess_Print("Now Battle Start Yeah."));
 
             // 触发效果
-            m_compResolver.TriggerResolve(new TriggerNodeBattleStart());
             EventOnBattleStateStarting?.Invoke();
 
             // 显示层表现
@@ -249,10 +252,7 @@ namespace My.Framework.Battle.Logic
         protected virtual void OnStateEnter_Closed()
         {
             // 抛出事件
-            EventOnBattleEnd?.Invoke("nmsl");
-
-            // 显示层表现
-            m_compProcessManager.FlushAndRaiseEvent();
+            EventOnBattleStateClosed?.Invoke();
         }
 
         #endregion
@@ -270,9 +270,23 @@ namespace My.Framework.Battle.Logic
         public event Action EventOnBattleStateStarting;
         public event Action EventOnBattleStateRunning;
         public event Action EventOnBattleStateEnding;
+        public event Action EventOnBattleStateClosed;
 
         #endregion
 
+        #region 内部方法
+
+        /// <summary>
+        /// 初始化阵营 控制器
+        /// </summary>
+        protected void InitControllers()
+        {
+            var initInfo = m_owner.BattleInitInfoGet();
+            m_controllers.Add(new BattleControllerPlayer());
+            m_controllers.Add(new BattleControllerEnemy());
+        }
+
+        #endregion
 
         #region 组件
 

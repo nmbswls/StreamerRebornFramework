@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Logic;
 
 namespace My.Framework.Battle.Actor
 {
@@ -37,6 +38,12 @@ namespace My.Framework.Battle.Actor
         /// </summary>
         /// <returns></returns>
         uint GetActorId();
+
+        /// <summary>
+        /// 获取结算器
+        /// </summary>
+        /// <returns></returns>
+        IBattleLogicResolver GetResolver();
     }
 
     public abstract class BattleActorHandlerBase

@@ -13,12 +13,13 @@ namespace My.Framework.Battle.View
     {
         public static int BattleEnd = 100;
         public static int FlushProcess = 120;
+        public static int EffectNodeHandled = 121;
     }
 
     /// <summary>
     /// 表现层事件监听器
     /// </summary>
-    public class BattleEventListenerView : IBattleMainEventListener
+    public class ViewBattleEventDispatcher : IBattleMainEventListener
     {
         #region 初始化
 
@@ -217,6 +218,15 @@ namespace My.Framework.Battle.View
         public void OnFlushProcess(List<BattleShowProcess> processList)
         {
             Broadcast(BattleEventIds.FlushProcess, processList);
+        }
+
+        /// <summary>
+        /// 通知上层 效果被handle
+        /// </summary>
+        /// <param name="effectNode"></param>
+        public void OnEffectNodeHandled(EffectNode effectNode)
+        {
+            Broadcast(BattleEventIds.EffectNodeHandled, effectNode);
         }
 
         #endregion

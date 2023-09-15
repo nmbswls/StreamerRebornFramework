@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace StreamerReborn
 {
-    public class UIComponentBattleHud : UIComponentBase
+    public class UIComponentStreamingHud : UIComponentBase
     {
         protected override void OnBindFiledsCompleted()
         {

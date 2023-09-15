@@ -51,7 +51,7 @@ namespace StreamerReborn
         public override void OnStart()
         {
             //
-            var hud = UIControllerBattleHud.GetCurrentHud();
+            var hud = UIControllerStreamingHud.GetCurrentHud();
             var cardComp = hud.m_compHud.m_cardContainer.GetCardUIComponent(m_cardInstanceId);
 
             if(cardComp == null)

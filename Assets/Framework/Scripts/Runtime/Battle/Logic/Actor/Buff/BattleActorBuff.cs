@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Battle.Logic;
 using UnityEngine;
 
 namespace My.Framework.Battle.Actor
@@ -31,6 +32,12 @@ namespace My.Framework.Battle.Actor
         /// </summary>
         /// <returns></returns>
         IBattleActor GetOwner();
+
+        /// <summary>
+        /// 获取结算器
+        /// </summary>
+        /// <returns></returns>
+        IBattleLogicResolver GetResolver();
     }
 
 
@@ -103,12 +110,12 @@ namespace My.Framework.Battle.Actor
             {
                 case "Damage":
                 {
-
+                    m_env.GetResolver().CurrContext.AddEffectNode(new EffectNodeDamage());
+                    
                 }
                     break;
             }
-            GetOwner().ApplyDamage(2000);
-            GetOwner().ApplyHpStateModify();
+            
         }
         #endregion
 
@@ -163,7 +170,7 @@ namespace My.Framework.Battle.Actor
         /// 执行触发
         /// </summary>
         /// <param name="triggerType"></param>
-        public virtual void OnTrigger(EnumTriggerType triggerType, params object[] paramList)
+        public virtual void OnTrigger(EnumBuffTriggerType triggerType, params object[] paramList)
         {
             // 处理触发
             foreach (var trigger in m_triggerList)
@@ -172,8 +179,12 @@ namespace My.Framework.Battle.Actor
                 {
                     continue;
                 }
-                //get trigger action
-                ApplyBuffAction(new FakeBattleActorBuffActionConfig());
+
+                // 开启新效果
+
+                var ctx = m_env.GetResolver().OpenResolveCtx(EnumTriggereSourceType.BuffTriggered);
+                //trigger.TriggerActionList maybe addbuff or damage
+                ctx.AddEffectNode(new EffectNodeAddBuff(){ SourceActorId = m_env.GetOwner().ActorId, TargetActorId = m_env.GetOwner().ActorId, BuffId = 400});
             }
         }
 

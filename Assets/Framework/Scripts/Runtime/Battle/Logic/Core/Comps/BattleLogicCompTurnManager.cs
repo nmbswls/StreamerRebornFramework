@@ -47,7 +47,7 @@ namespace My.Framework.Battle.Logic
             }
 
             m_compActorContainer = m_owner.CompGet<BattleLogicCompActorContainer>(GamePlayerCompNames.ActorManager);
-            m_compFsm = m_owner.CompGet<BattleLogicCompFsm>(GamePlayerCompNames.FSM);
+            m_compMain = m_owner.CompGet<BattleLogicCompMain>(GamePlayerCompNames.Main);
 
             return true;
         }
@@ -63,7 +63,8 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
 
-            //m_compFsm.EventOnBattleStateStarting += OnBattleStateStarting;
+            // 开始战斗
+            m_compMain.EventOnBattleStateRunning += OnBattleStart;
 
             // 初始化controller
             foreach (var ctrl in m_compMain.m_controllers)
@@ -96,7 +97,21 @@ namespace My.Framework.Battle.Logic
             }
         }
 
-        
+        /// <summary>
+        /// 战斗开始监听
+        /// </summary>
+        protected void OnBattleStart()
+        {
+            // 选择下个行动对象
+            var nextController = GetNextController();
+            if (nextController == null)
+            {
+                Debug.LogError("No Valid Controller");
+                return;
+            }
+            m_turnContext.m_currActCtrl = nextController;
+            m_turnContext.m_currActCtrl.DoTurnStart();
+        }
 
         /// <summary>
         /// 控制器回合结束事件
@@ -117,6 +132,7 @@ namespace My.Framework.Battle.Logic
             {
                 EnterNextTurn();
             }
+
             // 选择下个行动对象
             var nextController = GetNextController();
             if (nextController == null)
@@ -199,11 +215,6 @@ namespace My.Framework.Battle.Logic
         /// Main
         /// </summary>
         protected BattleLogicCompMain m_compMain;
-
-        /// <summary>
-        /// 状态机
-        /// </summary>
-        protected BattleLogicCompFsm m_compFsm;
 
         #endregion
 

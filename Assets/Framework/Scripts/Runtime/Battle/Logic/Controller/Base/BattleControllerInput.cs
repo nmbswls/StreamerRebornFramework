@@ -24,24 +24,18 @@ namespace My.Framework.Battle
 
     public class BattleControllerInput : IBattleControllerInput
     {
-        public BattleController Owner;
-
         /// <summary>
-        /// Push操作指令
+        /// 检查操作指令
         /// </summary>
         /// <param name="cmd"></param>
         public bool CheckOptInput(BattleOpt opt)
         {
             // 检查是否
-            if (!CanInputCmd())
+            if (!CanInputCmd(opt))
             {
                 return false;
             }
 
-            // 分配操作数据
-            opt.m_seq = Owner.m_env.OptSeqAlloc();
-
-            Owner.m_env.OptPush(opt);
             return true;
         }
 
@@ -81,7 +75,7 @@ namespace My.Framework.Battle
         /// <param name="opt"></param>
         protected virtual bool ExecEndTurn(BattleOpt opt)
         {
-            Owner.DoTurnEnd();
+            m_battleController.DoTurnEnd();
             return true;
         }
 
@@ -90,14 +84,20 @@ namespace My.Framework.Battle
         /// <summary>
         /// 是否可以输入角色操作指令
         /// </summary>
-        protected virtual bool CanInputCmd()
+        protected virtual bool CanInputCmd(BattleOpt opt)
         {
-            //var currCtrl = Owner.Owner.CurrTurnActionController();
-            //if (currCtrl == null || currCtrl != Owner)
-            //{
-            //    return false;
-            //}
+            var currCtrl = m_battleController.Owner.CurrTurnActionController();
+            if (currCtrl == null || currCtrl != m_battleController)
+            {
+                return false;
+            }
+            
             return true;
         }
+
+        /// <summary>
+        /// 控制器基类
+        /// </summary>
+        protected BattleController m_battleController;
     }
 }

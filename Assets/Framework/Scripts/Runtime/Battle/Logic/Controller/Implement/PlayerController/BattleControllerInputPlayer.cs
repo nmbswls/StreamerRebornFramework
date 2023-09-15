@@ -14,8 +14,8 @@ namespace My.Framework.Battle
     public class BattleControllerInputPlayer : BattleControllerInput, IBattleControllerInputPlayer
     {
 
-        public BattleControllerPlayer OwnerPlayer
-        { get { return (BattleControllerPlayer)Owner; } }
+        public BattleControllerPlayer ControllerPlayer
+        { get { return (BattleControllerPlayer)m_battleController; } }
 
 
         #region 指令执行具体类
@@ -26,7 +26,7 @@ namespace My.Framework.Battle
         /// <param name="opt"></param>
         protected override bool ExecSkillCast(BattleOpt opt)
         {
-            var mainActor = OwnerPlayer.MainPlayerActor;
+            var mainActor = ControllerPlayer.MainPlayerActor;
             mainActor.UseSkill(0);
             return true;
         }
@@ -37,12 +37,30 @@ namespace My.Framework.Battle
         /// <summary>
         /// 是否可以输入角色操作指令
         /// </summary>
-        protected override bool CanInputCmd()
+        protected override bool CanInputCmd(BattleOpt opt)
         {
-            if(!base.CanInputCmd())
+            if(!base.CanInputCmd(opt))
             {
                 return false;
             }
+
+            // 正在使用技能时 无法操作
+            var playerActor = ControllerPlayer.MainPlayerActor;
+            if (playerActor.IsAnySkillflowRunninging())
+            {
+                return false;
+            }
+
+            switch (opt.m_type)
+            {
+                case BattleOptType.SkillCast:
+                {
+                    // 检查是否有阻止施法的状态
+                    //if(playerActor.)
+                    break;
+                }
+            }
+
             return true;
         }
     }

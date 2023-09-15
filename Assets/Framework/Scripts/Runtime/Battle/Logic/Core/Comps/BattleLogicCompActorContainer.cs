@@ -61,8 +61,8 @@ namespace My.Framework.Battle.Logic
             {
                 return false;
             }
-            
-            m_compFsm = m_owner.CompGet<BattleLogicCompFsm>(GamePlayerCompNames.FSM);
+
+            m_compMain = m_owner.CompGet<BattleLogicCompMain>(GamePlayerCompNames.Main);
             m_compProcessManager = m_owner.CompGet<BattleLogicCompProcessManager>(GamePlayerCompNames.ProcessManager);
             return true;
         }
@@ -78,7 +78,7 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
 
-            m_compFsm.EventOnBattleStateStarting += OnBattleStarting;
+            m_compMain.EventOnBattleStateStarting += OnBattleStarting;
 
             // 构造角色
             //foreach (var setup in sceneConfInfo.CharActorSetups)
@@ -93,7 +93,8 @@ namespace My.Framework.Battle.Logic
             //        }
             //    }
             //}
-
+            CreateActor(BattleActorTypeStartup.Player, 0, BattleActorSourceType.Init, 1);
+            CreateActor(BattleActorTypeStartup.Enemy, 100, BattleActorSourceType.Init, 2);
 
             return true;
         }
@@ -105,7 +106,7 @@ namespace My.Framework.Battle.Logic
         {
             foreach (var battleActor in m_battleActorList)
             {
-                battleActor.OnBattleStart();
+                battleActor.OnTrigger(EnumBuffTriggerType.BattleStart);
             }
         }
 
@@ -138,6 +139,13 @@ namespace My.Framework.Battle.Logic
             m_battleActorList.Add(actor);
 
             // 加入阵营
+            if (!m_campActorDict.TryGetValue(campId, out var listVal))
+            {
+                listVal = new List<BattleActor>();
+                m_campActorDict[campId] = listVal;
+            }
+            listVal.Add(actor);
+            
             actor.CompBasic.CampId = campId;
             return actor;
         }
@@ -189,9 +197,13 @@ namespace My.Framework.Battle.Logic
             m_compProcessManager.FlushAndRaiseEvent();
         }
 
-        public BattleResolveContext GetResolveContext()
+        /// <summary>
+        /// 获取结算器
+        /// </summary>
+        /// <returns></returns>
+        public IBattleLogicResolver GetResolver()
         {
-            throw new NotImplementedException();
+            return m_compResolver;
         }
 
         #endregion
@@ -269,16 +281,21 @@ namespace My.Framework.Battle.Logic
         /// </summary>
         protected Dictionary<int, List<BattleActor>> m_campActorDict = new Dictionary<int, List<BattleActor>>();
 
-
-        /// <summary>
-        /// 状态机
-        /// </summary>
-        protected BattleLogicCompFsm m_compFsm;
         /// <summary>
         /// process处理
         /// </summary>
         protected BattleLogicCompProcessManager m_compProcessManager;
-        
+
+        /// <summary>
+        /// Resolver
+        /// </summary>
+        protected BattleLogicCompResolver m_compResolver;
+
+        /// <summary>
+        /// 主流程
+        /// </summary>
+        protected BattleLogicCompMain m_compMain;
+
 
         #region 事件监听
 

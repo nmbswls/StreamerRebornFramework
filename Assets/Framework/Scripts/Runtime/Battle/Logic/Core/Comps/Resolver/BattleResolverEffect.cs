@@ -6,30 +6,39 @@ using System.Threading.Tasks;
 
 namespace My.Framework.Battle.Logic
 {
-    public interface IEffectNodeEnv
-    {
 
-    }
     public enum BattleEffectType
     {
         Invalid,
         AddBuff,
         Spawn,
+        ChooseCard,
+        Damage,
     }
+
     public abstract class EffectNode
     {
-        protected EffectNode(IEffectNodeEnv env)
+
+        protected EffectNode()
         {
-            m_env = env;
         }
 
         /// <summary>
-        /// 是否准备完毕
+        /// 处理
         /// </summary>
-        /// <returns></returns>
-        public virtual bool IsReady()
+        /// <returns>是否结束 false表示需要等待</returns>
+        public virtual bool HandleEffect()
         {
             return true;
+        }
+
+        /// <summary>
+        /// 节点是否需要等待表现层结束
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool NeedWaitProcess()
+        {
+            return false;
         }
 
         /// <summary>
@@ -38,26 +47,14 @@ namespace My.Framework.Battle.Logic
         public bool Handled { get; set; }
 
         /// <summary>
+        /// 依赖数据是否准备完毕
+        /// </summary>
+        public bool IsDataReady = true;
+
+        /// <summary>
         /// 
         /// </summary>
-        protected IEffectNodeEnv m_env;
         public abstract BattleEffectType EffectType { get; }
+
     }
-
-    
-    public static class BattleEffectNodeFactory
-    {
-        
-        
-    }
-
-    public class EffectNodeBuff : EffectNode
-    {
-        public override BattleEffectType EffectType { get { return BattleEffectType.AddBuff; } }
-
-        public EffectNodeBuff(IEffectNodeEnv env) : base(env)
-        {
-        }
-    }
-
 }

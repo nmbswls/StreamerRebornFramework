@@ -161,14 +161,20 @@ namespace My.Framework.Runtime.Logic
 
         public void OnBattleEnd(string resultInfo)
         {
-            throw new NotImplementedException();
         }
 
         public void OnFlushProcess(List<BattleShowProcess> processList)
         {
-            throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 通知上层 效果被handle
+        /// </summary>
+        /// <param name="effectNode"></param>
+        public void OnEffectNodeHandled(EffectNode effectNode)
+        {
+            
+        }
 
         #endregion
 

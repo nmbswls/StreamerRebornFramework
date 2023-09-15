@@ -25,12 +25,6 @@ namespace My.Framework.Battle.Logic
         public const string Ruler = "Ruler";
 
         /// <summary>
-        /// FSM
-        /// </summary>
-
-        public const string FSM = "FSM";
-
-        /// <summary>
         /// TurnManager
         /// </summary>
 

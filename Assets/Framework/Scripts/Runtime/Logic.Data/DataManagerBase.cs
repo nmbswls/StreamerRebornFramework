@@ -40,7 +40,6 @@ namespace My.Framework.Runtime.Logic
 
         #endregion
 
-
         #region dc
 
         /// <summary>
