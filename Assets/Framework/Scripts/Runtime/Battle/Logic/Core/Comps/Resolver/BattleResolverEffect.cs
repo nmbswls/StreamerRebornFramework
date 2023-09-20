@@ -10,6 +10,7 @@ namespace My.Framework.Battle.Logic
     public enum BattleEffectType
     {
         Invalid,
+        Show,
         AddBuff,
         Spawn,
         ChooseCard,

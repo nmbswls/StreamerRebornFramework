@@ -99,7 +99,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "MainEntry",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentEntryStartup).ToString(),
                 m_compName = "MainEntry"
             },

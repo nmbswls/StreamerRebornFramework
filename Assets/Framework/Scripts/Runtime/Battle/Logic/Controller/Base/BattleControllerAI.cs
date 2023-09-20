@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace My.Framework.Battle
+namespace My.Framework.Battle.Logic
 {
     public interface IBattleControllerAI
     {

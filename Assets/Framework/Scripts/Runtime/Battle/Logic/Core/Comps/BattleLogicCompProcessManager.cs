@@ -92,6 +92,13 @@ namespace My.Framework.Battle.Logic
             }
         }
 
+        /// <summary>
+        /// 加入等待bar
+        /// </summary>
+        public void PushBlockBarProcess()
+        {
+            m_processCacheList.Add(new BattleShowProcessBar());
+        }
 
         #endregion
 

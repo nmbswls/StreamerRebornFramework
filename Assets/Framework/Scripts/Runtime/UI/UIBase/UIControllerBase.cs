@@ -744,7 +744,6 @@ namespace My.Framework.Runtime.UI
                 OnLoadStaticResCompleted();
                 return;
             }
-            m_loadingStaticResCorutineCount++;
             // 创建所有的layer
             for (int i = 0; i < toLoadList.Count; i++)
             {
@@ -758,16 +757,17 @@ namespace My.Framework.Runtime.UI
                 if (layerType == UILayerType.Normal)
                 {
                     m_currPipelineCtx.m_layerLoadedInPipe = true;
+                    m_loadingStaticResCorutineCount++;
 
                     UIManager.Instance.CreateLayer(typeof(UILayerNormal), layerName, layerResPath,
                         (layer) =>
                         {
                         // 加载失败
                         if (layer == null)
-                            {
-                                Debug.LogError(string.Format("Load Layer fail task={0} layer={1}", ToString(), layerName));
-                                return;
-                            }
+                        {
+                            Debug.LogError(string.Format("Load Layer fail task={0} layer={1}", ToString(), layerName));
+                            return;
+                        }
 
                         // 加载成功记录layer
                         m_layerArray[index] = layer;
@@ -779,6 +779,7 @@ namespace My.Framework.Runtime.UI
                 }
                 else if (layerResPath.EndsWith(".unity"))
                 {
+                    m_loadingStaticResCorutineCount++;
                     UIManager.Instance.CreateLayer(typeof(UILayerUnity), layerName, layerResPath,
                         (layer) =>
                         {
@@ -801,6 +802,7 @@ namespace My.Framework.Runtime.UI
                 else
                 {
                     m_currPipelineCtx.m_layerLoadedInPipe = true;
+                    m_loadingStaticResCorutineCount++;
 
                     UIManager.Instance.CreateLayer(typeof(UILayer3D), layerName, layerResPath,
                         (layer) =>
@@ -1086,7 +1088,18 @@ namespace My.Framework.Runtime.UI
                 }
                 else
                 {
-                    comp = layer.LayerPrefabRoot.GetComponent<UIComponentBase>();
+                    int index = desc.m_attachPath.IndexOf('/');
+                    if (index == -1)
+                    {
+                        comp = layer.LayerPrefabRoot.GetComponent<UIComponentBase>();
+                    }
+                    else
+                    {
+                        // 取得子节点路径
+                        string childPath = desc.m_attachPath.Substring(index + 1);
+                        Transform targetTans = layer.LayerPrefabRoot.transform.Find(childPath);
+                        comp = targetTans.GetComponent<UIComponentBase>();
+                    }
                 }
                 //ctrl = UIControllerBase.AddControllerToGameObject(layer.LayerPrefabRoot, desc.m_attachP
                     //ath, desc.m_ctrlTypeDNName, desc.m_ctrlName, desc.m_luaModuleName);

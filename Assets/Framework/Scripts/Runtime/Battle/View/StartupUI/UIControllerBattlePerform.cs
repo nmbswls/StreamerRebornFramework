@@ -47,6 +47,7 @@ namespace My.Framework.Runtime.UI
             Debug.Log($"ShowHintText of {text}");
         }
 
+
         /// <summary> 显示Buff宣告 技能宣告 </summary>
         public void ShowAnnounce(Vector3 originPos, string text, Action callback = null)
         {
@@ -100,14 +101,14 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "BattlePerformUI",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentBattlePerformUI).ToString(),
                 m_compName = "BattlePerformUI"
             },
             new UIComponentDesc
             {
                 m_attachLayerName = "BattlePerformUI",
-                m_attachPath = "./AnnouncementRoot",
+                m_attachPath = "./AnnouncementPanel",
                 m_compTypeName = typeof(UIComponentBattlePerformAnnounce).ToString(),
                 m_compName = "BattlePerformAnnounce"
             },

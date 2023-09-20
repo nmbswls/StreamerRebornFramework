@@ -67,8 +67,8 @@ namespace My.Framework.Runtime.Logic
         /// <summary>
         /// tick
         /// </summary>
-        /// <param name="currTime"></param>
-        public virtual void Tick(uint currTime)
+        /// <param name="dt"></param>
+        public virtual void Tick(float dt)
         {
         }
 

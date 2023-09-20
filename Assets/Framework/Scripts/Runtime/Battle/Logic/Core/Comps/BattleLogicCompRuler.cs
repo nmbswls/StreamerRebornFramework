@@ -33,6 +33,8 @@ namespace My.Framework.Battle.Logic
 
         public override string CompName { get { return GamePlayerCompNames.Ruler; } }
 
+        
+
 
         /// <summary>
         /// tick
@@ -87,6 +89,8 @@ namespace My.Framework.Battle.Logic
             }
 
             m_compActorContainer = m_owner.CompGet<BattleLogicCompActorContainer>(GamePlayerCompNames.ActorManager);
+            m_compTurnManager = m_owner.CompGet<BattleLogicCompTurnManager>(GamePlayerCompNames.TurnManager);
+
             return true;
         }
 
@@ -129,11 +133,11 @@ namespace My.Framework.Battle.Logic
             {
                 case "EnemyDie":
                 {
-                    var actor = m_compActorContainer.GetActor(100);
-                    if (actor == null || actor.CompBasic.IsDead)
-                    {
-                        return true;
-                    }
+                    //var actor = m_compActorContainer.GetActor(100);
+                    //if (actor == null || actor.CompBasic.IsDead)
+                    //{
+                    //    return true;
+                    //}
                     return false;
                 }
                 case "Turn":

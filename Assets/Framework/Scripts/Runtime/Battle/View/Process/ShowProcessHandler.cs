@@ -253,13 +253,49 @@ namespace My.Framework.Battle.View
 
             if (bunch.m_processList.Count == 1)
             {
-                mainProcess.Add(new ActionProcessClip());
+                // todo temp
+                ProcessClip clip;
+                switch (bunch.m_processList[0].Type)
+                {
+                    case ProcessTypes.Print:
+                    {
+                        clip = new ActionProcessClipPrint();
+                        break;
+                    }
+                    case ProcessTypes.Show:
+                    {
+                        clip = new ProcessClipShow();
+                        break;
+                    }
+                    default:
+                        clip = new ActionProcessClip();
+                        break;
+                }
+                mainProcess.Add(clip);
             }
             else
             {
                 foreach (var process in bunch.m_processList)
                 {
-                    mainProcess.Add(new ActionProcessClip());
+                    // todo temp
+                    ProcessClip clip;
+                    switch (process.Type)
+                    {
+                        case ProcessTypes.Print:
+                        {
+                            clip = new ActionProcessClipPrint();
+                            break;
+                        }
+                        case ProcessTypes.Show:
+                        {
+                            clip = new ProcessClipShow();
+                            break;
+                        }
+                        default:
+                            clip = new ActionProcessClip();
+                            break;
+                    }
+                    mainProcess.Add(clip);
                 }
             }
 

@@ -33,6 +33,14 @@ namespace My.Framework.Battle.Logic
         /// <param name="campId"></param>
         /// <returns></returns>
         IEnumerable<BattleActor> GetActorsByCamp(int campId);
+
+        /// <summary>
+        /// 获取指定类型actor
+        /// 尽量用于唯一actor
+        /// </summary>
+        /// <param name="actorType"></param>
+        /// <returns></returns>
+        BattleActor GetFirstActorByType(int actorType);
     }
 
 
@@ -64,6 +72,8 @@ namespace My.Framework.Battle.Logic
 
             m_compMain = m_owner.CompGet<BattleLogicCompMain>(GamePlayerCompNames.Main);
             m_compProcessManager = m_owner.CompGet<BattleLogicCompProcessManager>(GamePlayerCompNames.ProcessManager);
+            m_compResolver = m_owner.CompGet<BattleLogicCompResolver>(GamePlayerCompNames.Resolver);
+
             return true;
         }
 
@@ -98,6 +108,23 @@ namespace My.Framework.Battle.Logic
 
             return true;
         }
+
+
+        #region Overrides of BattleLogicCompBase
+
+        /// <summary>
+        /// tick
+        /// </summary>
+        /// <param name="dt"></param>
+        public override void Tick(float dt)
+        {
+            foreach (var actor in m_battleActorList)
+            {
+                actor.Tick(dt);
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 战斗状态切换 - 战前表现
@@ -152,15 +179,15 @@ namespace My.Framework.Battle.Logic
 
 
         /// <summary>
-        /// 获取指定actor
+        /// 获取指定instId的actor
         /// </summary>
-        /// <param name="actorId"></param>
+        /// <param name="instId"></param>
         /// <returns></returns>
-        public BattleActor GetActor(uint actorId)
+        public BattleActor GetActor(uint instId)
         {
             foreach (var actor in m_battleActorList)
             {
-                if (actor.ActorId == actorId)
+                if (actor.InstId == instId)
                 {
                     return actor;
                 }
@@ -183,6 +210,25 @@ namespace My.Framework.Battle.Logic
                     yield return actor;
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取指定类型actor
+        /// 尽量用于唯一actor
+        /// </summary>
+        /// <param name="actorType"></param>
+        /// <returns></returns>
+        public BattleActor GetFirstActorByType(int actorType)
+        {
+            foreach (var actor in m_battleActorList)
+            {
+                if (actor.ActorType == actorType)
+                {
+                    return actor;
+                }
+            }
+
+            return null;
         }
 
         #region env方法
@@ -214,14 +260,14 @@ namespace My.Framework.Battle.Logic
         /// 创建角色对象
         /// </summary>
         /// <returns></returns>
-        protected virtual BattleActor CreateActorInternal(int actorType, int actorConfigId, BattleActorSourceType sourceType, object actorInitInfo, uint actorId = 0)
+        protected virtual BattleActor CreateActorInternal(int actorType, int actorConfigId, BattleActorSourceType sourceType, object actorInitInfo, uint instId = 0)
         {
             // 分配id
-            actorId = actorId != 0 ? actorId : AllocActorId();
+            instId = instId != 0 ? instId : AllocActorInstId();
 
-            if (GetActor(actorId) != null)
+            if (GetActor(instId) != null)
             {
-                throw new Exception(string.Format("actorId:{0} is already exist", actorId));
+                throw new Exception(string.Format("actorId:{0} is already exist", instId));
             }
 
             // 构造actor对象
@@ -244,7 +290,7 @@ namespace My.Framework.Battle.Logic
             }
                 
             // 初始化Actor
-            if (!actor.Init(actorId, sourceType, actorInitInfo))
+            if (!actor.Init(instId, sourceType, actorConfigId))
             {
                 Debug.LogError("CreateCharActorInternal actor init fail");
                 throw new Exception("CreateCharActorInternal actor init fail");
@@ -257,7 +303,7 @@ namespace My.Framework.Battle.Logic
         /// 分配对象id
         /// </summary>
         /// <returns></returns>
-        protected uint AllocActorId()
+        protected uint AllocActorInstId()
         {
             s_actorIdSeq++;
             if (s_actorIdSeq == 0)

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using My.Framework.Runtime.UI;
+using UnityEngine;
 
 namespace My.Framework.Battle.View
 {
@@ -81,8 +83,41 @@ namespace My.Framework.Battle.View
 
     public class ActionProcessClip : ProcessClip
     {
-
+        public override bool NeedStop
+        {
+            get { return true; }
+        }
     }
+
+
+    public class ActionProcessClipPrint : ActionProcessClip
+    {
+        #region Overrides of ProcessClip
+
+        protected override void OnStartClip()
+        {
+            Debug.Log("I am print clip ");
+        }
+
+        #endregion
+    }
+
+    public class ProcessClipShow : ProcessClip
+    {
+        #region Overrides of ProcessClip
+
+        protected override void OnStartClip()
+        {
+            UIControllerBattlePerform.Instance.ShowAnnounce(Vector3.zero, $"ActionProcessClipShow",
+                () => { m_isFinished = true; });
+        }
+
+        public bool m_isFinished = false;
+        public override bool NeedStop { get { return m_isFinished; } }
+
+        #endregion
+    }
+
     /// <summary>
     /// 并行process容器
     /// </summary>

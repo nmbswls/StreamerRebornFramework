@@ -52,10 +52,10 @@ namespace My.Framework.Battle.Actor
         /// <summary>
         /// actor id
         /// </summary>
-        uint ActorId { get; }
+        uint InstId { get; }
     }
 
-    public partial class BattleActor : IBattleActor, IBattleActorCompProvider, IBattleActorOperatorEnv
+    public abstract partial class BattleActor : IBattleActor, IBattleActorCompProvider, IBattleActorOperatorEnv
     {
         protected BattleActor(IBattleActorEnvBase env)
         {
@@ -65,13 +65,16 @@ namespace My.Framework.Battle.Actor
         /// <summary>
         /// 初始化
         /// </summary>
+        /// <param name="instId">实例id</param>
         /// <param name="sourceType"></param>
+        /// <param name="actorId">配置id</param>
         /// <param name="attributePreset"></param>
         /// <returns></returns>
-        public virtual bool Init(uint actorId, BattleActorSourceType sourceType, object initInfo, Dictionary<int, long> attributePreset = null)
+        public virtual bool Init(uint instId, BattleActorSourceType sourceType, int actorId, Dictionary<int, long> attributePreset = null)
         {
-            m_actorId = actorId;
+            m_instId = instId;
             m_sourceType = sourceType;
+            m_actorId = actorId;
 
             // 创建组件
             CreateComps();
@@ -91,12 +94,31 @@ namespace My.Framework.Battle.Actor
             return true;
         }
 
+        public abstract int ActorType { get; }
+
+        /// <summary>
+        /// tick
+        /// </summary>
+        /// <param name="dt"></param>
+        public void Tick(float dt)
+        {
+            foreach (var handler in m_handlerList)
+            {
+                handler.Tick(dt);
+            }
+        }
+
         /// <summary>
         /// 初始化
         /// </summary>
         /// <returns></returns>
         protected bool OnInit()
         {
+            if (!InitComponents())
+            {
+                return false;
+            }
+
             if (!InitHandlers())
             {
                 return false;
@@ -124,7 +146,7 @@ namespace My.Framework.Battle.Actor
         /// </summary>
         protected virtual void CreateComps()
         {
-            CompBasic = new BattleActorCompBasic();
+            CompBasic = new BattleActorCompBasic(m_actorId, m_instId);
             CompAttribute = new BattleActorCompAttribute();
             CompSkill = new BattleActorCompSkill();
             CompBuff = new BattleActorCompBuff();
@@ -135,7 +157,6 @@ namespace My.Framework.Battle.Actor
             m_componentList.Add(CompSkill);
             m_componentList.Add(CompBuff);
             m_componentList.Add(CompHpState);
-            
         }
 
         /// <summary>
@@ -144,8 +165,30 @@ namespace My.Framework.Battle.Actor
         protected virtual void CreateHandlers()
         {
             m_handlerAttribute = new BattleActorHandlerAttribute(this);
-
             m_handlerList.Add(m_handlerAttribute);
+
+            m_handlerBuff = new BattleActorHandlerBuff(this);
+            m_handlerList.Add(m_handlerBuff);
+
+            m_handlerSkill = new BattleActorHandlerSkill(this);
+            m_handlerList.Add(m_handlerSkill);
+
+            m_handlerHpState = new BattleActorHandlerHpState(this);
+            m_handlerList.Add(m_handlerHpState);
+
+        }
+
+        protected bool InitComponents()
+        {
+            foreach (var component in m_componentList)
+            {
+                if (component != null && !component.Initialize())
+                {
+                    throw new Exception(component + "init fail");
+                }
+            }
+
+            return true;
         }
 
 
@@ -259,7 +302,7 @@ namespace My.Framework.Battle.Actor
 
         public uint GetActorId()
         {
-            return m_actorId;
+            return m_instId;
         }
 
         /// <summary>
@@ -311,8 +354,17 @@ namespace My.Framework.Battle.Actor
         /// <summary>
         /// actorId
         /// </summary>
-        protected uint m_actorId;
-        public uint ActorId
+        protected uint m_instId;
+        public uint InstId
+        {
+            get { return m_instId; }
+        }
+
+        /// <summary>
+        /// actorId
+        /// </summary>
+        protected int m_actorId;
+        public int ActorId
         {
             get { return m_actorId; }
         }

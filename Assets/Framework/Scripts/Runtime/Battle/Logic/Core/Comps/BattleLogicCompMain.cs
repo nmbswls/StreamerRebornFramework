@@ -42,7 +42,7 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
 
-            m_compActorContainer = m_owner.CompGet<BattleLogicCompActorContainer>(GamePlayerCompNames.ProcessManager);
+            m_compActorContainer = m_owner.CompGet<BattleLogicCompActorContainer>(GamePlayerCompNames.ActorManager);
             m_compProcessManager = m_owner.CompGet<BattleLogicCompProcessManager>(GamePlayerCompNames.ProcessManager);
             m_compRuler = m_owner.CompGet<BattleLogicCompRuler>(GamePlayerCompNames.Ruler);
             m_compResolver = m_owner.CompGet<BattleLogicCompResolver>(GamePlayerCompNames.Resolver);
@@ -85,6 +85,11 @@ namespace My.Framework.Battle.Logic
         public override void Tick(float dt)
         {
             TickState(dt);
+
+            foreach (var ctrl in m_controllers)
+            {
+                ctrl.Tick(dt);
+            }
         }
 
         #endregion
@@ -162,6 +167,14 @@ namespace My.Framework.Battle.Logic
             {
                 case BattleMainState.Init:
                     break;
+                case BattleMainState.Starting:
+                    // 当没有process时 进入下个阶段
+                    if (m_compProcessManager.IsPlayingProcess())
+                    {
+                        break;
+                    }
+                    StateGoto(BattleMainState.Running);
+                    break;
                 case BattleMainState.Running:
                 {
                     // 如果已经结束 进入下个状态
@@ -225,6 +238,7 @@ namespace My.Framework.Battle.Logic
             EventOnBattleStateStarting?.Invoke();
 
             // 显示层表现
+            m_compProcessManager.PushBlockBarProcess();
             m_compProcessManager.FlushAndRaiseEvent();
         }
 
@@ -282,8 +296,13 @@ namespace My.Framework.Battle.Logic
         protected void InitControllers()
         {
             var initInfo = m_owner.BattleInitInfoGet();
-            m_controllers.Add(new BattleControllerPlayer());
-            m_controllers.Add(new BattleControllerEnemy());
+            var ctrlPlayer = new BattleControllerPlayer((BattleLogic) m_owner);
+            ctrlPlayer.Initialize();
+            var ctrlEnemy = new BattleControllerEnemy((BattleLogic)m_owner);
+            ctrlEnemy.Initialize();
+
+            m_controllers.Add(ctrlPlayer);
+            m_controllers.Add(ctrlEnemy);
         }
 
         #endregion

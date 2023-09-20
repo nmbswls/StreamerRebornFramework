@@ -40,6 +40,9 @@ namespace My.Framework.Battle.Actor
         public virtual void OnSkillCast(IBattleLogicResolver resolver)
         {
             var ctx = resolver.OpenResolveCtx(EnumTriggereSourceType.OnCast);
+
+            // 显示特效
+            ctx.AddEffectNode(new EffectNodeShow());
         }
 
         public virtual void OnSkillPostCast(IBattleLogicResolver resolver)

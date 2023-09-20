@@ -20,8 +20,7 @@ namespace StreamerReborn
             base.DoRegister();
 
             UIManager.Instance.RegisterUIController("WorldOverlay", typeof(UIControllerWorldOverlay).ToString(), 4);
-            UIManager.Instance.RegisterUIController("SceneHud", typeof(UIControllerSceneHud).ToString(), 4);
-            
+            UIManager.Instance.RegisterUIController("SceneHud", typeof(UIControllerSceneHudSimple).ToString(), 2);
         }
     }
 

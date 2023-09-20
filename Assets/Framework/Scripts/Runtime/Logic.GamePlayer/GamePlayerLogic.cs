@@ -40,7 +40,30 @@ namespace My.Framework.Runtime.Logic
         /// </summary>
         public void Initialize()
         {
+            m_compBattle = new GamePlayerCompBattle(this);
+            m_compList.Add(m_compBattle);
 
+            foreach (var comp in m_compList)
+            {
+                comp.Initlialize();
+            }
+
+            foreach (var comp in m_compList)
+            {
+                comp.PostInitlialize();
+            }
+        }
+
+        /// <summary>
+        /// tick
+        /// </summary>
+        /// <param name="dt"></param>
+        public void Tick(float dt)
+        {
+            foreach (var comp in m_compList)
+            {
+                comp.Tick(dt);
+            }
         }
 
         /// <summary>

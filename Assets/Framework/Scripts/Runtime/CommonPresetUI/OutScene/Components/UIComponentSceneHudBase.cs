@@ -8,23 +8,18 @@ using My.Framework.Runtime.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace StreamerReborn
+namespace My.Framework.Runtime.UI
 {
     /// <summary>
     /// hud 界面
     /// </summary>
-    public class UIComponentSceneHud : UIComponentBase
+    public class UIComponentSceneHudBase : UIComponentBase
     {
 
         protected override void OnBindFiledsCompleted()
         {
             base.OnBindFiledsCompleted();
             RegisterEvents();
-
-            m_compPopCircle.BindFields();
-            m_compPopCircle.gameObject.SetActive(false);
-
-            SetButtonClickListener(nameof(m_testEnterBattleButton), OnEnterBattleButtonClick);
         }
 
 
@@ -40,9 +35,6 @@ namespace StreamerReborn
         {
             base.Clear();
             UnregisterEvents();
-
-            if (m_compPopCircle != null)
-                m_compPopCircle.Clear();
         }
 
         /// <summary>
@@ -62,7 +54,6 @@ namespace StreamerReborn
 
         public override void Tick(float dt)
         {
-            m_compPopCircle.Tick(dt);
         }
 
         /// <summary>
@@ -70,29 +61,15 @@ namespace StreamerReborn
         /// </summary>
         protected void OnAddCaptiveButtonClick()
         {
-            //GameStatic.GamePlayer.GainRandomCaptive(100);
         }
 
         #region ui回调
 
-        /// <summary>
-        /// 点击按钮
-        /// </summary>
-        protected void OnEnterBattleButtonClick(UIComponentBase _)
-        {
-            MyGameManager.Instance.LaunchBattle();
-        }
 
         #endregion
 
-
         #region 绑定区域
 
-        [AutoBind("./EnterBattleButton")]
-        public Button m_testEnterBattleButton;
-
-        [AutoBind("./PopCircle")]
-        public UIComponentHudPopCircle m_compPopCircle;
 
         #endregion
     }

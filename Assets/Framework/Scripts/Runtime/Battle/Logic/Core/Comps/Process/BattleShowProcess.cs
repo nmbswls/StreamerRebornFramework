@@ -23,6 +23,7 @@ namespace My.Framework.Battle
         public const int Bar = 1;
         public const int Wait = 2;
         public const int Print = 3;
+        public const int Show = 4;
         public const int Announce = 10;
     }
 

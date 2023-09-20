@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using My.Framework.Battle.Actor;
-using My.Framework.Battle.Logic;
 using UnityEngine;
 
-namespace My.Framework.Battle
+namespace My.Framework.Battle.Logic
 {
 
     //public interface IBattleControllerEnv
@@ -28,11 +27,24 @@ namespace My.Framework.Battle
     
     public partial class BattleController : IBattleControllerInput
     {
-        protected BattleController()
+        protected BattleController(BattleLogic battleLogic)
         {
             //m_env = env;
+            BattleLogic = battleLogic;
         }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public virtual void Initialize()
+        {
+            m_input = CreateInputModule();
+        }
+
+        /// <summary>
+        /// Tick
+        /// </summary>
+        /// <param name="dt"></param>
         public virtual void Tick(float dt)
         {
             TurnActionStateTick();
@@ -82,7 +94,7 @@ namespace My.Framework.Battle
             {
                 case TurnActionState.TurnActionStart:
                     // 仍有表现层播放 跳过
-                    if (Owner.CompProcessManager.IsPlayingProcess())
+                    if (BattleLogic.CompProcessManager.IsPlayingProcess())
                     {
                         break;
                     }
@@ -92,7 +104,7 @@ namespace My.Framework.Battle
                     break;
                 case TurnActionState.TurnActionEnd:
                     // 仍有表现层播放 跳过
-                    if (Owner.CompProcessManager.IsPlayingProcess())
+                    if (BattleLogic.CompProcessManager.IsPlayingProcess())
                     {
                         break;
                     }
@@ -108,7 +120,7 @@ namespace My.Framework.Battle
                 case TurnActionState.TurnActionExecuting:
                     {
                         // 仍有表现层播放 跳过
-                        if (Owner.CompProcessManager.IsPlayingProcess())
+                        if (BattleLogic.CompProcessManager.IsPlayingProcess())
                         {
                             break;
                         }
@@ -117,6 +129,9 @@ namespace My.Framework.Battle
                         break;
                     }
                 case TurnActionState.Idle:
+                {
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -170,17 +185,21 @@ namespace My.Framework.Battle
         #endregion
 
         
-
+        /// <summary>
+        /// 开始回合
+        /// </summary>
         public void DoTurnStart()
         {
-            // 触发类效果
-            Owner.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnStart);
+            Debug.Log($" ControllerId DoTurnStart ControllerId {ControllerId}");
 
-            foreach (var actor in Owner.GetActorsByCamp(ControllerId))
+            // 触发类效果
+            BattleLogic.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnStart);
+
+            foreach (var actor in BattleLogic.GetActorsByCamp(ControllerId))
             {
                 actor.OnTrigger(EnumBuffTriggerType.TurnStart);
             }
-            Owner.CompResolver.TickResolve();
+            BattleLogic.CompResolver.TickResolve();
 
             TurnActionStateGoto(TurnActionState.TurnActionStart);
         }
@@ -191,13 +210,13 @@ namespace My.Framework.Battle
         public void DoTurnEnd()
         {
             // 触发类效果
-            Owner.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnEnd);
+            BattleLogic.CompResolver.OpenResolveCtx(EnumTriggereSourceType.TurnEnd);
 
-            foreach (var actor in Owner.GetActorsByCamp(ControllerId))
+            foreach (var actor in BattleLogic.GetActorsByCamp(ControllerId))
             {
                 actor.OnTrigger(EnumBuffTriggerType.TurnEnd);
             }
-            Owner.CompResolver.TickResolve();
+            BattleLogic.CompResolver.TickResolve();
 
             // 切换状态
             TurnActionStateGoto(TurnActionState.TurnActionEnd);
@@ -218,6 +237,15 @@ namespace My.Framework.Battle
                 TurnActionStateGoto(TurnActionState.TurnActionExecuting);
             }
             return execRet;
+        }
+
+        /// <summary>
+        /// 创建输入模块
+        /// </summary>
+        /// <returns></returns>
+        protected virtual BattleControllerInput CreateInputModule()
+        {
+            return new BattleControllerInput(this);
         }
 
         #region 事件
@@ -274,7 +302,7 @@ namespace My.Framework.Battle
 
         #region 内部变量
 
-        public BattleLogic Owner;
+        public BattleLogic BattleLogic;
         //public IBattleControllerEnv m_env;
 
         /// <summary>

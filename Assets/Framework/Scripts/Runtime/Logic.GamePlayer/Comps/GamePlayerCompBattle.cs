@@ -26,13 +26,13 @@ namespace My.Framework.Runtime.Logic
         void BattleCtxOpen(BattleLaunchInfo battleLaunchInfo);
     }
 
-    public  class GamePlayerCompBattle : GamePlayerCompBase, IBattleMainEnv, IBattleMainEventListener
+    public class GamePlayerCompBattle : GamePlayerCompBase, IBattleMainEnv, IBattleMainEventListener
     {
         /// <summary>
         /// 构造
         /// </summary>
         /// <param name="owner"></param>
-        protected GamePlayerCompBattle(IGamePlayerCompOwnerBase owner) : base(owner)
+        public GamePlayerCompBattle(IGamePlayerCompOwnerBase owner) : base(owner)
         {
         }
 

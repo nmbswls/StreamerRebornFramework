@@ -11,19 +11,23 @@ using UnityEngine.SceneManagement;
 
 namespace My.Framework.Battle
 {
-    public class BattleSceneManager
+    public abstract class BattleSceneManagerBase
     {
-        private Scene? BindScene;
+        protected Scene? BindScene;
 
-        private bool m_isStarted = false;
-        private event Action EventOnLoadSceneEnd;
+        protected bool m_isStarted = false;
+        protected event Action EventOnLoadSceneEnd;
+
         public virtual void Initialize(Scene scene)
         {
             this.BindScene = scene;
-            GameObject actorRoot = CreateGameObject("SceneActorRoot");
-            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(actorRoot, BindScene.Value);
-            m_sceneActorManager = new BattleSceneActorManager(actorRoot);
-            m_sceneActorRootTransform = actorRoot.transform;
+            var rootObjs = BindScene.Value.GetRootGameObjects();
+
+            var sceneRoot = rootObjs[0].transform;
+            BindSceneRoot(sceneRoot);
+            
+            m_sceneActorManager = CreateBattleSceneActorManager();
+
 
             LoadBattleSceneObjects();
 
@@ -67,6 +71,22 @@ namespace My.Framework.Battle
         }
 
         #region 内部方法
+
+        /// <summary>
+        /// 创建scene 
+        /// </summary>
+        /// <returns></returns>
+        protected abstract BattleSceneActorManagerBase CreateBattleSceneActorManager();
+
+        /// <summary>
+        /// 绑定场景节点
+        /// </summary>
+        protected virtual void BindSceneRoot(Transform sceneRoot)
+        {
+            m_sceneActorRootTransform = sceneRoot.Find("ActorRoot");
+            m_namedPointRoot = sceneRoot.Find("NamedPointRoot");
+        }
+
 
         public GameObject GetSceneObj(string name)
         {
@@ -112,16 +132,20 @@ namespace My.Framework.Battle
         /// <summary>
         /// 场景actor管理器
         /// </summary>
-        protected BattleSceneActorManager m_sceneActorManager;
-        public BattleSceneActorManager ActorManager
+        protected BattleSceneActorManagerBase m_sceneActorManager;
+        public BattleSceneActorManagerBase ActorManager
         {
             get { return m_sceneActorManager; }
         }
 
         // 组织根节点
-        protected Transform m_sceneObjContainer;
-        protected Transform m_sceneActorRootTransform;
+        public Transform m_sceneObjContainer;
+        public Transform m_sceneActorRootTransform;
 
-        
+        /// <summary>
+        /// 命名点根节点
+        /// </summary>
+        public Transform m_namedPointRoot;
+
     }
 }

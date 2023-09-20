@@ -37,6 +37,20 @@ namespace My.Framework.Runtime.Prefab
     public class PrefabComponentBase : MonoBehaviour
     {
         /// <summary>
+        /// 初始化，实现节点和资源的绑定操作
+        /// </summary>
+        public virtual void Initialize()
+        {
+            if (m_inited)
+            {
+                return;
+            }
+            m_inited = true;
+
+            BindFields();
+        }
+
+        /// <summary>
         /// 自动绑定组件
         /// </summary>
         public virtual void BindFields(bool force = false)
@@ -220,6 +234,10 @@ namespace My.Framework.Runtime.Prefab
 
         #endregion
 
+        /// <summary>
+        /// 是否初始化完成
+        /// </summary>
+        protected bool m_inited;
 
         /// <summary>
         /// 是否已绑定 确保重复调用

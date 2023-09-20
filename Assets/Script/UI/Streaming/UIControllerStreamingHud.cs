@@ -117,7 +117,7 @@ namespace StreamerReborn
             new UIComponentDesc
             {
                 m_attachLayerName = "BattleHud",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentStreamingHud).ToString(),
                 m_compName = "BattleHud"
             },

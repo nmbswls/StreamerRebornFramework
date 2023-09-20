@@ -101,7 +101,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "ScreenEffect",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentScreenEffectSimple).ToString(),
                 m_compName = "ScreenEffect"
             },

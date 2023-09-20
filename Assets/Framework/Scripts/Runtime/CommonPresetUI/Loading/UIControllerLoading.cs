@@ -208,7 +208,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "Loading",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentLoading).ToString(),
                 m_compName = "Loading"
             },

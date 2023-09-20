@@ -21,9 +21,13 @@ namespace My.Framework.Runtime.UI
             UIManager.Instance.RegisterUIController("ScreenEffect", typeof(UIControllerScreenEffectSimple).ToString(), 99);
 
             UIManager.Instance.RegisterUIController("Dialog", typeof(UIControllerDialogSimple).ToString(), 2);
+            UIManager.Instance.RegisterUIController("SceneHud", typeof(UIControllerSceneHudBase).ToString(), 2);
+
 
             UIManager.Instance.RegisterUIController("BattleStartup", typeof(UIControllerBattleStartup).ToString(), 10);
             UIManager.Instance.RegisterUIController("BattlePerform", typeof(UIControllerBattlePerform).ToString(), 10);
+
+
         }
     }
 

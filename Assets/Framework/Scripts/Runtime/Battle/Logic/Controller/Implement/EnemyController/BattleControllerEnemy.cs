@@ -4,13 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using My.Framework.Battle.Actor;
+using My.Framework.Battle.Logic;
 
-namespace My.Framework.Battle
+namespace My.Framework.Battle.Logic
 {
 
     public partial class BattleControllerEnemy : BattleController
     {
-        public BattleControllerEnemy() :base()
+        public BattleControllerEnemy(BattleLogic battleLogic) :base(battleLogic)
         {
             
         }

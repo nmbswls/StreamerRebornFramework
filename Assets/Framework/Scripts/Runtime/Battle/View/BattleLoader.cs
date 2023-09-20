@@ -33,6 +33,8 @@ namespace My.Framework.Battle.View
                 LoadEnd();
                 return;
             }
+
+            m_battleInfo = battleInfo;
             m_actionOnEnd = actionOnEnd;
             Action action = () =>
             {
@@ -76,7 +78,7 @@ namespace My.Framework.Battle.View
             // TODO 真实初始化数据
             int sceneId = m_battleInfo;
             var loadingCtx = new XXXSceneLoadingCtxBase();
-            loadingCtx.MainSceneName = "test/battle.unity";
+            loadingCtx.MainSceneName = "Assets/RuntimeAssets/Battle/Default.unity";
             loadingCtx.Start();
             while (loadingCtx.IsRunning)
             {
@@ -88,7 +90,8 @@ namespace My.Framework.Battle.View
                 yield break;
             }
             // 初始化场景
-            BattleManager.Instance.SceneManager.Initialize(loadingCtx.SceneLoaded.Value);
+            BattleManagerBase.Instance.SceneManager.Initialize(loadingCtx.SceneLoaded.Value);
+
         }
 
         protected IEnumerator LoadUI()
@@ -168,7 +171,7 @@ namespace My.Framework.Battle.View
                     yield return null;
                 }
 
-                BattleManager.Instance.SceneManager.ActorManager.Initialize(BattleManager.Instance.BattleLogic);
+                BattleManagerBase.Instance.SceneManager.ActorManager.Initialize(BattleManagerBase.Instance.BattleLogic);
                 onCompleted?.Invoke();
             }
         }

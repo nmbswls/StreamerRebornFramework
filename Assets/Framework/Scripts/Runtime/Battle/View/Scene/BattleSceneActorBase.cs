@@ -20,9 +20,39 @@ namespace My.Framework.Battle
         public void Initialize(BattleActor logicActor)
         {
             LogicActor = logicActor;
+
+            // 执行绑定
+            BindFields();
+
             // 命名点初始化
             NamedPointInit();
         }
+
+        /// <summary>
+        /// 设置坐标位置
+        /// </summary>
+        /// <param name="position"></param>
+        /// <param name="worldSpace"></param>
+        /// <param name="resetTailEffect"></param>
+        public void SetActorPosition(Vector3 position, Boolean worldSpace = true, Boolean resetTailEffect = false)
+        {
+            if (worldSpace)
+                transform.position = position;
+            else
+                transform.localPosition = position;
+
+            if (resetTailEffect)
+            {
+                for (int i = 0; i < m_trailEffectHelperList.Count; ++i)
+                {
+                    m_trailEffectHelperList[i].ResetTrailEffect();
+                }
+            }
+        }
+
+
+
+        #region 装配树形结构
 
         /// <summary>
         /// 命名点初始化
@@ -36,10 +66,14 @@ namespace My.Framework.Battle
             }
         }
 
+        #endregion
+
         /// <summary>
         /// 命名点缓存
         /// </summary>
         private readonly Dictionary<string, Transform> m_namedPointDict = new Dictionary<string, Transform>();
+
+        private List<TrailEffectHelper> m_trailEffectHelperList = new List<TrailEffectHelper>();
 
         /// <summary>
         /// UI point根节点
@@ -51,6 +85,9 @@ namespace My.Framework.Battle
         [AutoBind("./NamedPointRoot")]
         protected Transform m_namedPointRoot;
 
+        /// <summary>
+        /// 逻辑Actor对象
+        /// </summary>
         public BattleActor LogicActor;
     }
 }

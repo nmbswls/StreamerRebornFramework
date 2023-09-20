@@ -8,12 +8,17 @@ namespace My.Framework.Battle.Actor
 {
     public class BattleActorCompBasic : BattleActorCompBase
     {
-        public uint ActorId;
-        public int ActorType;
+        public uint InstId;
         public int Level;
-        public int ConfigId;
+        public int ActorId;
         public int CampId;
 
         public bool IsDead;
+
+        public BattleActorCompBasic(int actorId, uint instId)
+        {
+            ActorId = actorId;
+            InstId = instId;
+        }
     }
 }

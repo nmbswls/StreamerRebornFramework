@@ -19,6 +19,12 @@ namespace My.Framework.Battle.Actor
             Finish,
         }
 
+        public BattleActorSkillRunflow(BattleActorSkill skill, BattleActorHandlerSkill handler)
+        {
+            InnerSkill = skill;
+            Owner = handler;
+        }
+
         public BattleActorHandlerSkill Owner;
         public BattleActorSkill InnerSkill;
 

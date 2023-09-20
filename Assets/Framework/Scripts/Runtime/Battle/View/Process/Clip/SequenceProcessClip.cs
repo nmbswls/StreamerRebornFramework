@@ -37,7 +37,12 @@ namespace My.Framework.Battle.View
             if (m_curProcess != null)
             {
                 m_curProcess.Update(deltaTime);
+                if (m_curProcess.NeedStop)
+                {
+                    m_curProcess.End();
+                }
             }
+
         }
 
         public void ProcessNext()

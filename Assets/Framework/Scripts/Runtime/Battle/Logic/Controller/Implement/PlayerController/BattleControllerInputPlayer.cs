@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace My.Framework.Battle
+namespace My.Framework.Battle.Logic
 {
     
     public interface IBattleControllerInputPlayer : IBattleControllerInput
@@ -14,11 +14,18 @@ namespace My.Framework.Battle
     public class BattleControllerInputPlayer : BattleControllerInput, IBattleControllerInputPlayer
     {
 
+        public BattleControllerInputPlayer(BattleController battleController):base(battleController)
+        {
+        }
+
+
         public BattleControllerPlayer ControllerPlayer
         { get { return (BattleControllerPlayer)m_battleController; } }
 
 
         #region 指令执行具体类
+
+        
 
         /// <summary>
         /// 执行 - 释放技能
@@ -31,7 +38,6 @@ namespace My.Framework.Battle
             return true;
         }
 
-        
         #endregion
 
         /// <summary>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace My.Framework.Battle
+namespace My.Framework.Battle.Logic
 {
     
     public interface IBattleControllerInput
@@ -24,6 +24,11 @@ namespace My.Framework.Battle
 
     public class BattleControllerInput : IBattleControllerInput
     {
+        public BattleControllerInput(BattleController battleController)
+        {
+            m_battleController = battleController;
+        }
+
         /// <summary>
         /// 检查操作指令
         /// </summary>
@@ -86,12 +91,18 @@ namespace My.Framework.Battle
         /// </summary>
         protected virtual bool CanInputCmd(BattleOpt opt)
         {
-            var currCtrl = m_battleController.Owner.CurrTurnActionController();
+            var currCtrl = m_battleController.BattleLogic.CurrTurnActionController();
             if (currCtrl == null || currCtrl != m_battleController)
             {
                 return false;
             }
-            
+
+            // 只有等待阶段才可输入
+            if (currCtrl.CurrState != BattleController.TurnActionState.WaitOptCmdInput)
+            {
+                return false;
+            }
+
             return true;
         }
 

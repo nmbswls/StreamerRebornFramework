@@ -8,6 +8,9 @@ namespace My.Framework.Battle.Actor
 {
     public class BattleActorCompBase
     {
-        
+        public virtual bool Initialize()
+        {
+            return true;
+        }
     }
 }

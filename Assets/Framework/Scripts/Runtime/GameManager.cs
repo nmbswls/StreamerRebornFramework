@@ -120,15 +120,16 @@ namespace My.Framework.Runtime
 
             m_storytellingSystem?.Tick();
 
-            if (Input.GetKeyDown(KeyCode.A))
+            if (m_gamePlayer != null)
             {
-                LaunchBattle();
+                m_gamePlayer.Tick(Time.deltaTime);
             }
+            
 
             // TODO 移动到统一tick入口中
             if (m_isInBattle)
             {
-                BattleManager.Instance.OnTick(Time.deltaTime);
+                BattleManager.OnTick(Time.deltaTime);
             }
         }
 

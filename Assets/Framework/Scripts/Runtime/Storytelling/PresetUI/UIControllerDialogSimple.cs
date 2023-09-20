@@ -147,7 +147,7 @@ namespace My.Framework.Runtime
             new UIComponentDesc
             {
                 m_attachLayerName = "Dialog",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentDialogSimple).ToString(),
                 m_compName = "Dialog"
             },

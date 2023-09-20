@@ -184,7 +184,7 @@ namespace My.Framework.Battle.Actor
 
                 var ctx = m_env.GetResolver().OpenResolveCtx(EnumTriggereSourceType.BuffTriggered);
                 //trigger.TriggerActionList maybe addbuff or damage
-                ctx.AddEffectNode(new EffectNodeAddBuff(){ SourceActorId = m_env.GetOwner().ActorId, TargetActorId = m_env.GetOwner().ActorId, BuffId = 400});
+                ctx.AddEffectNode(new EffectNodeAddBuff(){ SourceActorId = m_env.GetOwner().InstId, TargetActorId = m_env.GetOwner().InstId, BuffId = 400});
             }
         }
 

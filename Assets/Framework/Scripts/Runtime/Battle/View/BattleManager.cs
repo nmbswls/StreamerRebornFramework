@@ -13,43 +13,72 @@ namespace My.Framework.Battle.View
     /// <summary>
     /// 单例战斗管理器
     /// </summary>
-    public class BattleManager : Singleton<BattleManager>
+    public abstract class BattleManagerBase
     {
-        protected override void Init()
+
+        #region 单例相关
+
+
+        protected BattleManagerBase()
+        {
+        }
+
+        public static BattleManagerBase Instance
+        {
+            get
+            {
+                return GameManager.Instance.BattleManager;
+            }
+        }
+
+        public static bool HasInstance
+        {
+            get { return GameManager.Instance.BattleManager != null; }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public virtual void Init()
         {
             m_battleLoader = CreateBattleLoader();
+            m_sceneManager = CreateBattleSceneManager();
             RegisterListener();
         }
 
-        protected override void UnInit()
+        /// <summary>
+        /// 销毁
+        /// </summary>
+        public virtual void UnInit()
         {
             UnregisterListener();
         }
 
         public void OnTick(float deltaTime)
         {
-            if (!m_isRunning || m_isErrorOccured)
-            {
-                return;
-            }
             if (!m_battleLoader.isComplete)
             {
                 m_battleLoader.Tick();
             }
-            if (m_isRunning)
+
+            if (!m_isRunning || m_isErrorOccured)
             {
-                //battle里面会堆积事件
-                for (int i = 0; i < 10; ++i)
+                return;
+            }
+
+            //battle里面会堆积事件
+            for (int i = 0; i < 10; ++i)
+            {
+                try
                 {
-                    try
-                    {
-                        BattleLogic.Tick(0);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError(e.ToString());
-                        m_isErrorOccured = true;
-                    }
+                    BattleLogic.Tick(0);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e.ToString());
+                    m_isErrorOccured = true;
                 }
             }
 
@@ -80,9 +109,6 @@ namespace My.Framework.Battle.View
             PostOpenBattle(BattleLogic.BattleStart);
         }
 
-
-        
-
         #region 供子类重写
 
         /// <summary>
@@ -93,6 +119,12 @@ namespace My.Framework.Battle.View
         {
             return new ViewBattleEventDispatcher();
         }
+
+        /// <summary>
+        /// 创建监听组件
+        /// </summary>
+        /// <returns></returns>
+        protected abstract BattleSceneManagerBase CreateBattleSceneManager();
 
         /// <summary>
         /// 创建加载器
@@ -149,7 +181,7 @@ namespace My.Framework.Battle.View
             {
                 m_isBlockStartBattle = false;
                 m_isRunning = true;
-                BattleManager.Instance.SceneManager.RestartBattle();
+                BattleManagerBase.Instance.SceneManager.RestartBattle();
                 actionOnEnd();
                 //EventManager.Instance.BroadCast(EventID.BattleMessage_BattleStarted, m_mainBattle.GetConfBattleSceneInfo().ID, m_replayBattle);
             }
@@ -214,19 +246,19 @@ namespace My.Framework.Battle.View
         /// <summary>
         /// 场景控制器
         /// </summary>
-        public BattleSceneManager SceneManager 
+        public BattleSceneManagerBase SceneManager 
         {
             get
             {
                 return m_sceneManager;
             }
         }
-        protected BattleSceneManager m_sceneManager = new BattleSceneManager();
+        protected BattleSceneManagerBase m_sceneManager;
 
         /// <summary>
-        /// 
+        /// process处理器
         /// </summary>
-        public ShowProcessHandler m_showProcessHandler;
+        public ShowProcessHandler m_showProcessHandler = new ShowProcessHandler();
 
         /// <summary>
         /// 持有逻辑类

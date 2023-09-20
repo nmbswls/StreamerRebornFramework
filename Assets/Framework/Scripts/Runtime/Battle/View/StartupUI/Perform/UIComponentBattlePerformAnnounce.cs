@@ -47,7 +47,8 @@ namespace My.Framework.Runtime.UI
         protected override void OnBindFiledsCompleted()
         {
             base.OnBindFiledsCompleted();
-            m_announceItemPrefab = SimpleResourceManager.Instance.LoadAssetSync<GameObject>("AnnounceItem");
+            //m_announceItemPrefab = SimpleResourceManager.Instance.LoadAssetSync<GameObject>("AnnounceItem");
+            m_announceItemPrefab = transform.Find("ItemPrefab").gameObject;
         }
 
         #region 对外方法
@@ -70,7 +71,8 @@ namespace My.Framework.Runtime.UI
                 {
                     GameObject go = GameObject.Instantiate(m_announceItemPrefab);
                     //PrefabControllerCreater.CreateAllControllers(go);
-                    announceItem = go.GetComponent<UIComponentBattlePerformAnnounceItem>();
+                    announceItem = go.AddComponent<UIComponentBattlePerformAnnounceItem>();
+                    announceItem.Initialize();
                 }
                 else
                 {
@@ -184,6 +186,11 @@ namespace My.Framework.Runtime.UI
 
         private Boolean CheckIsInScreen(out Vector3 viewport)
         {
+            viewport = Vector3.zero;
+            if (BindingTarget == null)
+            {
+                return true;
+            }
             //var actorPos = ((BattleSceneActor)m_battleSceneActor).HudRoot.position + new Vector3(0.3f, 0.3f, 0);
             viewport = Camera.main.WorldToViewportPoint(BindingTarget.position);
             if (viewport.z < 0 || viewport.x < 0f || viewport.y < 0f || viewport.x > 1f || viewport.y > 1f)
@@ -205,6 +212,7 @@ namespace My.Framework.Runtime.UI
         #region Bind
         [AutoBind(".")]
         protected GameObject m_mainRoot;
+
         [AutoBind("./ShowText")] 
         protected Text m_showText;
         #endregion

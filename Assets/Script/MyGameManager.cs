@@ -10,6 +10,7 @@ using StreamerReborn.Saving;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using My.Framework.Battle.View;
 using My.Framework.Runtime.Logic;
 using UnityEngine;
 
@@ -91,6 +92,16 @@ namespace StreamerReborn
         protected override StorytellingSystemBase CreateStorytellingSystem()
         {
             return new MyStorytellingSystem();
+        }
+
+        /// <summary>
+        /// 根据战斗信息创建对应类型的battlemanager
+        /// </summary>
+        /// <param name="battleInfo"></param>
+        /// <returns></returns>
+        protected override BattleManagerBase CreateBattleManager(int battleInfo)
+        {
+            return new BattleManagerTorture();
         }
 
         /// <summary>

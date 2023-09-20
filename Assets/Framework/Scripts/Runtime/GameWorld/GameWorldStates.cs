@@ -15,7 +15,7 @@ namespace My.Framework.Runtime
 
     /// <summary>
     /// 世界状态 - 空
-    /// 非法状态，表示主菜单等游戏外状态
+    /// 表示主菜单等游戏外状态
     /// </summary>
     public class GameWorldStateNone : GameWorldStateBase
     {
@@ -51,10 +51,7 @@ namespace My.Framework.Runtime
         /// </summary>
         public override void OnUpdate()
         {
-            if(Input.GetKeyDown(KeyCode.A))
-            {
-                m_env.ChangeState(GameWorldStateTypeDefineBase.SimpleMap);
-            }
+            
         }
 
         /// <summary>
@@ -62,9 +59,14 @@ namespace My.Framework.Runtime
         /// </summary>
         protected override IEnumerator OnEnter()
         {
-
+            yield return UIBeforeLoading();
             var sceneName = GetMainSceneName();
+
+            // 显示hud
+            UIControllerSceneHudBase.Create();
+
             yield return SwitchSceneSimple(sceneName, onSwitchEnd: OnEnterHall);
+            yield return UIAfterLoading();
         }
 
         /// <summary>

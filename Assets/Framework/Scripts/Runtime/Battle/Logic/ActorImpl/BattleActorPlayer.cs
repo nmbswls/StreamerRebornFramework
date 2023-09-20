@@ -10,6 +10,12 @@ namespace My.Framework.Battle.Actor
     {
         public BattleActorPlayer(IBattleActorEnvBase env) : base(env)
         {
+
+        }
+
+        public override int ActorType
+        {
+            get { return BattleActorTypeStartup.Player; }
         }
     }
 }

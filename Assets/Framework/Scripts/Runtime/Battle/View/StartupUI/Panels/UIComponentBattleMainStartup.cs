@@ -74,9 +74,6 @@ namespace My.Framework.Runtime.UI
 
         #region °ó¶¨ÇøÓò
 
-        [AutoBind("./TestText")]
-        public Text m_testText;
-
         [AutoBind("./UseSkilButton")]
         public Button m_fakeUseSkilButton;
 

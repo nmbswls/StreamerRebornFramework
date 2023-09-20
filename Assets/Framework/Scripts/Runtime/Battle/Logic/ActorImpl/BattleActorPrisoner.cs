@@ -11,5 +11,9 @@ namespace My.Framework.Battle.Actor
         public BattleActorPrisoner(IBattleActorEnvBase env) : base(env)
         {
         }
+        public override int ActorType
+        {
+            get { return BattleActorTypeStartup.Enemy; }
+        }
     }
 }

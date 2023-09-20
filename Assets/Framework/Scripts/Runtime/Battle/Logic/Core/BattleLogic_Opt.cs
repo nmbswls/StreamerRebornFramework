@@ -27,7 +27,7 @@ namespace My.Framework.Battle.Logic
                 return false;
             }
             
-            if(targetCtrl.CheckOptInput(opt))
+            if(!targetCtrl.CheckOptInput(opt))
             {
                 Debug.LogError("opt CheckOptInput fail");
                 return false;

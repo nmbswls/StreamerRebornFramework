@@ -365,6 +365,14 @@ namespace My.Framework.Battle.Logic
                     actor.ApplyHpStateModify();
                 }
                     break;
+                case BattleEffectType.Show:
+                {
+                    var realNode = (EffectNodeShow)effectNode;
+                    m_compProcessManager.PushProcessToCache(new BattleShowProcess_Show("show info", 1f));
+                    m_compProcessManager.PushBlockBarProcess();
+                    m_compProcessManager.FlushAndRaiseEvent();
+                }
+                    break;
             }
 
             return true;

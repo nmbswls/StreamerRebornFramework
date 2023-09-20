@@ -59,6 +59,9 @@ namespace My.Framework.Battle.Actor
         /// <returns></returns>
         public override bool PostInitialize()
         {
+            // todo 添加测试技能
+            m_compSkill.SkillList.Add(new BattleActorSkill());
+
             foreach (var skill in m_compSkill.SkillList)
             {
                 if (skill.IsPassive())
@@ -74,8 +77,8 @@ namespace My.Framework.Battle.Actor
         /// <summary>
         /// tick
         /// </summary>
-        /// <param name="currTime"></param>
-        public override void Tick(uint currTime)
+        /// <param name="dt"></param>
+        public override void Tick(float dt)
         {
             foreach (var runflow in m_runningSkillRunflowList)
             {
@@ -123,8 +126,7 @@ namespace My.Framework.Battle.Actor
             }
             
             // 获取skill
-            var runflow = new BattleActorSkillRunflow();
-            runflow.InnerSkill = m_compSkill.SkillList[skillId];
+            var runflow = new BattleActorSkillRunflow(m_compSkill.SkillList[skillId], this);
 
             runflow.Start();
             m_runningSkillRunflowList.Add(runflow);

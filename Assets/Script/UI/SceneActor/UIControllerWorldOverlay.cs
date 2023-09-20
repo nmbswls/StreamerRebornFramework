@@ -167,7 +167,7 @@ namespace StreamerReborn
             new UIComponentDesc
             {
                 m_attachLayerName = "WorldOverlay",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentWorldOverlay).ToString(),
                 m_compName = "WorldOverlay"
             },

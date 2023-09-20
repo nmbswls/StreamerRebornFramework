@@ -35,11 +35,11 @@ namespace My.Framework.Runtime.UI
                 m_compMain = m_uiCompArray[0] as UIComponentBattleMainStartup;
                 m_compMain.EventOnFakeUseSkill += () =>
                 {
-                    BattleManager.Instance.BattleLogic.InputOpt(new BattleOpt(){m_type = BattleOptType.SkillCast, m_controllerId = 1});
+                    BattleManagerBase.Instance.BattleLogic.InputOpt(new BattleOpt(){m_type = BattleOptType.SkillCast, m_controllerId = 0});
                 };
                 m_compMain.EventOnFakeEndTurn += () =>
                 {
-                    BattleManager.Instance.BattleLogic.InputOpt(new BattleOpt() { m_type = BattleOptType.EndTurn, m_controllerId = 1 });
+                    BattleManagerBase.Instance.BattleLogic.InputOpt(new BattleOpt() { m_type = BattleOptType.EndTurn, m_controllerId = 0 });
                 };
             }
             if (m_uiCompArray.Length > 1 && m_compMain == null)
@@ -52,7 +52,7 @@ namespace My.Framework.Runtime.UI
             }
 
             // ×¢²áÊÂ¼þ
-            BattleManager.Instance.BattleEventDispatcher.RegisterListener<EffectNode>(BattleEventIds.EffectNodeHandled, OnEffectNodeHandled);
+            BattleManagerBase.Instance.BattleEventDispatcher.RegisterListener<EffectNode>(BattleEventIds.EffectNodeHandled, OnEffectNodeHandled);
         }
 
         protected override void OnTick(float dt)
@@ -135,14 +135,14 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "BattleMain",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentBattleMainStartup).ToString(),
                 m_compName = "BattleMain"
             },
             new UIComponentDesc
             {
                 m_attachLayerName = "BattleFloating",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentBattleFloatingStartup).ToString(),
                 m_compName = "BattleFloating"
             },

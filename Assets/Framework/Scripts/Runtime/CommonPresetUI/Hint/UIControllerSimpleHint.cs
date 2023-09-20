@@ -110,7 +110,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "SimpleHint",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentBase).ToString(),
                 m_compName = "SimpleHint"
             },

@@ -24,7 +24,7 @@ namespace My.Framework.Battle
 
         public override int Type
         {
-            get { return ProcessTypes.Announce; }
+            get { return ProcessTypes.Print; }
         }
     }
 }

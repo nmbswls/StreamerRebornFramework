@@ -24,6 +24,11 @@ namespace My.Framework.Runtime
             m_gamePlayerLogic.Initialize();
         }
 
+        public void Tick(float dt)
+        {
+            m_gamePlayerLogic?.Tick(dt);
+        }
+
         protected virtual GamePlayerLogic CreateGamePlayerLogic()
         {
             return new GamePlayerLogic(this);

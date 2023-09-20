@@ -63,29 +63,42 @@ namespace My.Framework.Battle.Logic
             m_compList.Clear();
             m_compNameDict.Clear();
 
+            CompMain = new BattleLogicCompMain(this);
+            m_compList.Add(CompMain);
+
             CompProcessManager = new BattleLogicCompProcessManager(this);
             m_compList.Add(CompProcessManager);
 
             CompResolver = new BattleLogicCompResolver(this);
-            m_compList.Add(CompProcessManager);
+            m_compList.Add(CompResolver);
 
-            Recorder = new BattleLogicCompRecorder(this);
-            m_compList.Add(CompProcessManager);
+            CompRecorder = new BattleLogicCompRecorder(this);
+            m_compList.Add(CompRecorder);
 
-            Rebuilder = new BattleLogicCompRebuilder(this, null);
-            m_compList.Add(CompProcessManager);
+            CompRebuilder = new BattleLogicCompRebuilder(this, null);
+            m_compList.Add(CompRebuilder);
+
+            CompRuler = new BattleLogicCompRuler(this);
+            m_compList.Add(CompRuler);
 
             CompTurnManager = new BattleLogicCompTurnManager(this);
-            m_compList.Add(CompProcessManager);
+            m_compList.Add(CompTurnManager);
+
+            CompActorContainer = new BattleLogicCompActorContainer(this);
+            m_compList.Add(CompActorContainer);
 
             foreach (var comp in m_compList)
             {
                 m_compNameDict[comp.CompName] = comp;
-                if(!comp.Initialize())
+            }
+
+            foreach (var comp in m_compList)
+            {
+                if (!comp.Initialize())
                 {
                 }
             }
-
+            
             return true;
         }
 
@@ -113,7 +126,10 @@ namespace My.Framework.Battle.Logic
         /// <param name="dt"></param>
         public virtual void Tick(float dt)
         {
-
+            foreach (var comp in m_compList)
+            {
+                comp.Tick(dt);
+            }
         }
 
         /// <summary>
@@ -180,9 +196,9 @@ namespace My.Framework.Battle.Logic
 
         public BattleLogicCompResolver CompResolver;
 
-        public BattleLogicCompRecorder Recorder;
+        public BattleLogicCompRecorder CompRecorder;
 
-        public BattleLogicCompRebuilder Rebuilder;
+        public BattleLogicCompRebuilder CompRebuilder;
 
         public BattleLogicCompRuler CompRuler;
 
@@ -250,6 +266,17 @@ namespace My.Framework.Battle.Logic
         public IEnumerable<BattleActor> GetActorsByCamp(int campId)
         {
             return CompActorContainer.GetActorsByCamp(campId);
+        }
+
+        /// <summary>
+        /// 获取指定类型actor
+        /// 尽量用于唯一actor
+        /// </summary>
+        /// <param name="actorType"></param>
+        /// <returns></returns>
+        public BattleActor GetFirstActorByType(int actorType)
+        {
+            return CompActorContainer.GetFirstActorByType(actorType);
         }
 
         #endregion

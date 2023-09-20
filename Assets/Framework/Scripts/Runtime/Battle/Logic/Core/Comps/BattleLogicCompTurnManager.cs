@@ -69,11 +69,23 @@ namespace My.Framework.Battle.Logic
             // 初始化controller
             foreach (var ctrl in m_compMain.m_controllers)
             {
-                ctrl.EventOnExitTurnStart += OnControllerTurnEnd;
+                ctrl.EventOnExitTurnEnd += OnControllerTurnEnd;
             }
 
             return true;
         }
+
+        #region Overrides of BattleLogicCompBase
+
+        /// <summary>
+        /// tick
+        /// </summary>
+        /// <param name="dt"></param>
+        public override void Tick(float dt)
+        {
+        }
+
+        #endregion
 
         #endregion
 

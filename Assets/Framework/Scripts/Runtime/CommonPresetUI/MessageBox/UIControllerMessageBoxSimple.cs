@@ -84,7 +84,7 @@ namespace My.Framework.Runtime.UI
             new UIComponentDesc
             {
                 m_attachLayerName = "MessageBox",
-                m_attachPath = "./",
+                m_attachPath = ".",
                 m_compTypeName = typeof(UIComponentMessageBoxSimple).ToString(),
                 m_compName = "MessageBox"
             },
